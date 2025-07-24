@@ -1,460 +1,913 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CapCut Stili Video Editör (Tam Çalışan)</title>
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: #eee;
-    display: flex;
-    height: 100vh;
-    overflow: hidden;
-  }
-  #leftPanel {
-    width: 300px;
-    background: #1e1e1e;
-    border-right: 1px solid #333;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  #leftPanel h2 {
-    font-weight: 600;
-    font-size: 1.4rem;
-    margin-bottom: 10px;
-  }
-  label.file-upload {
-    background: #3a3a3a;
-    padding: 12px;
-    border-radius: 6px;
-    text-align: center;
-    cursor: pointer;
-    user-select: none;
-    font-weight: 600;
-    transition: background 0.2s ease;
-    display: block;
-    margin-bottom: 5px;
-  }
-  label.file-upload:hover {
-    background: #575757;
-  }
-  input[type="file"] {
-    display: none;
-  }
-  #fileList {
-    flex: 1;
-    overflow-y: auto;
-    background: #222;
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 0.9rem;
-  }
-  #fileList p, #fileList div.clip-item {
-    margin: 6px 0;
-    word-break: break-word;
-  }
-  .clip-item {
-    background: #333;
-    padding: 8px 12px;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .clip-item.selected {
-    background: #3a86ff;
-  }
-  .clip-name {
-    flex: 1;
-    user-select: none;
-  }
-  .remove-btn {
-    background: transparent;
-    border: none;
-    color: #eee;
-    font-weight: 700;
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 0 6px;
-  }
-  .remove-btn:hover {
-    color: #ff4c4c;
-  }
-  #audioName p {
-    margin: 0;
-    font-size: 0.9rem;
-    background: #222;
-    padding: 6px;
-    border-radius: 5px;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CapCut Clone | GitHub</title>
+    <style>
+        :root {
+            --primary: #fe2c55;
+            --dark-bg: #0f0f0f;
+            --panel-bg: #161823;
+            --text-light: #ffffff;
+            --text-gray: #aaaaaa;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background-color: var(--dark-bg);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-bottom: 1px solid #333;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .logo span {
+            color: white;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #555;
+            color: var(--text-light);
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 280px;
+            background-color: var(--panel-bg);
+            padding: 15px;
+            overflow-y: auto;
+        }
+        
+        .tab-buttons {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .tab-btn {
+            padding: 10px 15px;
+            background: none;
+            border: none;
+            color: var(--text-gray);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .tab-btn.active {
+            color: var(--text-light);
+            font-weight: 500;
+        }
+        
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--primary);
+        }
+        
+        .media-library {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .media-item {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .media-item:hover {
+            transform: scale(1.02);
+        }
+        
+        .media-thumbnail {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            background-color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-gray);
+            font-size: 12px;
+        }
+        
+        .media-label {
+            padding: 8px;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .preview-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #000;
+            position: relative;
+        }
+        
+        #preview-video {
+            max-width: 100%;
+            max-height: 100%;
+        }
+        
+        .timeline-container {
+            height: 200px;
+            background-color: var(--panel-bg);
+            border-top: 1px solid #333;
+            padding: 10px;
+            overflow-x: auto;
+        }
+        
+        .timeline {
+            height: 100%;
+            min-width: 100%;
+            position: relative;
+            background-color: rgba(255, 255, 255, 0.03);
+        }
+        
+        .track {
+            height: 60px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .video-clip {
+            position: absolute;
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 4px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            user-select: none;
+        }
+        
+        .audio-clip {
+            position: absolute;
+            height: 100%;
+            background-color: #25f4ee;
+            border-radius: 4px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: black;
+            font-size: 12px;
+            user-select: none;
+        }
+        
+        .playhead {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .tools-panel {
+            display: flex;
+            padding: 10px;
+            background-color: var(--panel-bg);
+            border-top: 1px solid #333;
+            gap: 10px;
+            overflow-x: auto;
+        }
+        
+        .tool-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            padding: 8px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 12px;
+            gap: 4px;
+            min-width: 60px;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .tool-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .tool-btn i {
+            font-size: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .modal-content {
+            background-color: var(--panel-bg);
+            border-radius: 8px;
+            padding: 20px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
 
-  #centerPanel {
-    flex: 1;
-    background: #000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    padding: 20px;
-  }
-  video#previewVideo {
-    max-width: 100%;
-    max-height: 70vh;
-    border-radius: 8px;
-    background: #000;
-    box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
-  }
-  #loadingOverlay {
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-    color: #eee;
-    display: none;
-    user-select: none;
-    border-radius: 8px;
-  }
+        /* Drag and drop */
+        .drag-over {
+            border: 2px dashed var(--primary) !important;
+        }
 
-  #timeline {
-    margin-top: 15px;
-    width: 100%;
-    background: #222;
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 0.9rem;
-    color: #bbb;
-    user-select: none;
-  }
-  #timeline strong {
-    color: #eee;
-  }
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
 
-  #rightPanel {
-    width: 320px;
-    background: #1e1e1e;
-    border-left: 1px solid #333;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-  #rightPanel h3 {
-    font-weight: 600;
-    font-size: 1.3rem;
-    margin-bottom: 12px;
-  }
-  label {
-    display: block;
-    font-size: 0.9rem;
-    margin-bottom: 6px;
-    user-select: none;
-  }
-  input[type="number"], input[type="range"] {
-    width: 100%;
-    padding: 6px;
-    border-radius: 5px;
-    border: none;
-    background: #333;
-    color: #eee;
-  }
-  input[type="range"] {
-    cursor: pointer;
-  }
-  button#processBtn {
-    margin-top: auto;
-    background: #3a86ff;
-    border: none;
-    color: white;
-    padding: 14px;
-    font-weight: 700;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-  button#processBtn:disabled {
-    background: #6a6a6a;
-    cursor: not-allowed;
-  }
-  button#processBtn:hover:not(:disabled) {
-    background: #265fcf;
-  }
-</style>
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    </style>
 </head>
 <body>
+    <header>
+        <div class="logo">
+            <span>Video</span>Editor
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" id="export-btn">Dışa Aktar</button>
+        </div>
+    </header>
+    
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="tab-buttons">
+                <button class="tab-btn active" data-tab="media">Medya</button>
+                <button class="tab-btn" data-tab="audio">Sesler</button>
+                <button class="tab-btn" data-tab="text">Metin</button>
+            </div>
+            
+            <div id="media-tab" class="tab-content">
+                <div class="media-library">
+                    <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-5s.mp4">
+                        <div class="media-thumbnail">Video 1</div>
+                        <div class="media-label">Örnek Video 1</div>
+                    </div>
+                    <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-10s.mp4">
+                        <div class="media-thumbnail">Video 2</div>
+                        <div class="media-label">Örnek Video 2</div>
+                    </div>
+                    <div class="media-item" data-type="audio" data-src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3">
+                        <div class="media-thumbnail">Müzik 1</div>
+                        <div class="media-label">Örnek Müzik</div>
+                    </div>
+                    <div class="media-item" id="upload-item">
+                        <div class="media-thumbnail">+ Yükle</div>
+                        <div class="media-label">Kendi Medyan</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="editor-area">
+            <div class="preview-container" id="preview-container">
+                <video id="preview-video"></video>
+                <div id="drop-message" class="hidden" style="position: absolute; color: white; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; pointer-events: none;">
+                    Videoyu buraya bırakın
+                </div>
+            </div>
+            
+            <div class="timeline-container">
+                <div class="timeline" id="timeline">
+                    <div class="playhead" id="playhead"></div>
+                    <div class="track" id="video-track"></div>
+                    <div class="track" id="audio-track"></div>
+                </div>
+            </div>
+            
+            <div class="tools-panel">
+                <button class="tool-btn" id="cut-btn">
+                    <span>Kes</span>
+                </button>
+                <button class="tool-btn" id="delete-btn">
+                    <span>Sil</span>
+                </button>
+                <button class="tool-btn" id="split-btn">
+                    <span>Ayır</span>
+                </button>
+                <button class="tool-btn" id="speed-btn">
+                    <span>Hız</span>
+                </button>
+                <button class="tool-btn" id="volume-btn">
+                    <span>Ses</span>
+                </button>
+                <button class="tool-btn" id="text-btn">
+                    <span>Metin</span>
+                </button>
+                <button class="tool-btn" id="effects-btn">
+                    <span>Efektler</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div class="modal hidden" id="export-modal">
+        <div class="modal-content">
+            <div class="modal-title">Dışa Aktar</div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Video çözünürlüğü:</label>
+                <select style="width: 100%; padding: 8px; background: #333; color: white; border: none; border-radius: 4px;">
+                    <option>1080p (Full HD)</option>
+                    <option>720p (HD)</option>
+                    <option selected>480p (SD)</option>
+                </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px;">Dosya formatı:</label>
+                <select style="width: 100%; padding: 8px; background: #333; color: white; border: none; border-radius: 4px;">
+                    <option selected>MP4</option>
+                    <option>MOV</option>
+                    <option>GIF</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-export">İptal</button>
+                <button class="btn btn-primary" id="confirm-export">Dışa Aktar</button>
+            </div>
+        </div>
+    </div>
 
-<div id="leftPanel">
-  <h2>Medya Yükle</h2>
-  <label class="file-upload" for="videoFiles">Video Dosyaları Ekle</label>
-  <input type="file" id="videoFiles" accept="video/*" multiple />
+    <!-- Upload Modal -->
+    <div class="modal hidden" id="upload-modal">
+        <div class="modal-content">
+            <div class="modal-title">Medya Yükle</div>
+            <div style="margin-bottom: 15px;">
+                <input type="file" id="file-upload" accept="video/*,audio/*" style="display: none;">
+                <div style="border: 2px dashed #555; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer;" id="upload-drop-area">
+                    <p>Dosyaları sürükleyip bırakın veya tıklayın</p>
+                    <p style="font-size: 12px; color: var(--text-gray);">MP4, MOV, MP3 desteklenir</p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-outline" id="cancel-upload">İptal</button>
+            </div>
+        </div>
+    </div>
 
-  <div id="fileList"><p>Henüz video seçilmedi.</p></div>
-
-  <label class="file-upload" for="audioFile">Arka Plan Müziği Ekle</label>
-  <input type="file" id="audioFile" accept="audio/*" />
-  <div id="audioName"><p>Müzik seçilmedi.</p></div>
-</div>
-
-<div id="centerPanel">
-  <video id="previewVideo" controls></video>
-  <div id="loadingOverlay">İşleniyor...</div>
-  <div id="timeline">Zaman Çizgisi: --</div>
-</div>
-
-<div id="rightPanel">
-  <h3>Düzenleme</h3>
-
-  <label for="trimStart">Başlangıç (sn):</label>
-  <input type="number" id="trimStart" min="0" step="0.1" value="0" />
-
-  <label for="trimEnd">Bitiş (sn):</label>
-  <input type="number" id="trimEnd" min="0" step="0.1" value="10" />
-
-  <label for="volume">Müzik Ses Seviyesi:</label>
-  <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" />
-
-  <button id="processBtn" disabled>Videoyu Düzenle ve Oluştur</button>
-</div>
-
-<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.8/dist/ffmpeg.min.js"></script>
-<script>
-  const { createFFmpeg, fetchFile } = FFmpeg;
-  const ffmpeg = createFFmpeg({ log: true });
-
-  const videoFilesInput = document.getElementById('videoFiles');
-  const audioFileInput = document.getElementById('audioFile');
-  const fileListDiv = document.getElementById('fileList');
-  const audioNameDiv = document.getElementById('audioName');
-  const previewVideo = document.getElementById('previewVideo');
-  const loadingOverlay = document.getElementById('loadingOverlay');
-  const timeline = document.getElementById('timeline');
-  const trimStartInput = document.getElementById('trimStart');
-  const trimEndInput = document.getElementById('trimEnd');
-  const volumeInput = document.getElementById('volume');
-  const processBtn = document.getElementById('processBtn');
-
-  // Video kliplerini tutan dizi (dosyalar)
-  let videoFiles = [];
-  let audioFile = null;
-
-  // Seçili klip indeksi (timeline'da)
-  let selectedClipIndex = 0;
-
-  // Klipleri güncelle ve listele
-  function updateVideoListUI() {
-    if (videoFiles.length === 0) {
-      fileListDiv.innerHTML = '<p>Henüz video seçilmedi.</p>';
-      processBtn.disabled = true;
-      previewVideo.src = '';
-      timeline.textContent = 'Zaman Çizgisi: --';
-      return;
-    }
-    fileListDiv.innerHTML = '';
-    videoFiles.forEach((file, i) => {
-      const div = document.createElement('div');
-      div.className = 'clip-item' + (i === selectedClipIndex ? ' selected' : '');
-      div.title = 'Klibi Önizle / Düzenle';
-      // Tıklayınca seçili klip değişsin
-      div.onclick = () => {
-        selectedClipIndex = i;
-        loadClipMetadata(i);
-        updateVideoListUI();
-      };
-
-      const span = document.createElement('span');
-      span.className = 'clip-name';
-      span.textContent = file.name;
-      div.appendChild(span);
-
-      const removeBtn = document.createElement('button');
-      removeBtn.className = 'remove-btn';
-      removeBtn.textContent = '×';
-      removeBtn.title = 'Klibi Sil';
-      removeBtn.onclick = (e) => {
-        e.stopPropagation();
-        videoFiles.splice(i, 1);
-        if (selectedClipIndex >= videoFiles.length) selectedClipIndex = videoFiles.length - 1;
-        updateVideoListUI();
-        if (videoFiles.length > 0) loadClipMetadata(selectedClipIndex);
-        else {
-          previewVideo.src = '';
-          timeline.textContent = 'Zaman Çizgisi: --';
-        }
-      };
-      div.appendChild(removeBtn);
-
-      fileListDiv.appendChild(div);
-    });
-    processBtn.disabled = false;
-  }
-
-  // Seçili klibin metadata'sını (süre) oku, önizleme yap ve kırpma alanını ayarla
-  function loadClipMetadata(index) {
-    if (index < 0 || index >= videoFiles.length) return;
-    const file = videoFiles[index];
-    const url = URL.createObjectURL(file);
-    previewVideo.src = url;
-
-    // Videonun metadata'sını yükle
-    previewVideo.onloadedmetadata = () => {
-      timeline.textContent = `Zaman Çizgisi: 0s — ${previewVideo.duration.toFixed(2)}s`;
-      trimStartInput.value = 0;
-      trimEndInput.value = previewVideo.duration.toFixed(2);
-
-      trimStartInput.max = previewVideo.duration.toFixed(2);
-      trimEndInput.max = previewVideo.duration.toFixed(2);
-    };
-  }
-
-  // Müzik dosyası yüklendiğinde
-  audioFileInput.addEventListener('change', () => {
-    if (audioFileInput.files.length > 0) {
-      audioFile = audioFileInput.files[0];
-      audioNameDiv.innerHTML = `<p>${audioFile.name}</p>`;
-    } else {
-      audioFile = null;
-      audioNameDiv.innerHTML = `<p>Müzik seçilmedi.</p>`;
-    }
-  });
-
-  // Video dosyaları seçilince
-  videoFilesInput.addEventListener('change', () => {
-    if (videoFilesInput.files.length > 0) {
-      videoFiles = Array.from(videoFilesInput.files);
-      selectedClipIndex = 0;
-      updateVideoListUI();
-      loadClipMetadata(0);
-    }
-  });
-
-  // Trim inputları için validasyon ve güncelleme
-  trimStartInput.addEventListener('input', () => {
-    let start = parseFloat(trimStartInput.value);
-    let end = parseFloat(trimEndInput.value);
-    if (start < 0) start = 0;
-    if (start > end) start = end;
-    trimStartInput.value = start.toFixed(2);
-  });
-
-  trimEndInput.addEventListener('input', () => {
-    let start = parseFloat(trimStartInput.value);
-    let end = parseFloat(trimEndInput.value);
-    if (end < start) end = start;
-    if (end > parseFloat(trimEndInput.max)) end = parseFloat(trimEndInput.max);
-    trimEndInput.value = end.toFixed(2);
-  });
-
-  // ffmpeg yüklenirken overlay göster
-  async function showLoading(visible) {
-    loadingOverlay.style.display = visible ? 'flex' : 'none';
-  }
-
-  // Videoyu düzenle ve oluştur
-  processBtn.addEventListener('click', async () => {
-    if (videoFiles.length === 0) return alert('En az bir video dosyası ekleyin.');
-
-    processBtn.disabled = true;
-    await showLoading(true);
-
-    try {
-      if (!ffmpeg.isLoaded()) {
-        await ffmpeg.load();
-      }
-
-      // ffmpeg içini temizle
-      ffmpeg.FS('unlink', 'output.mp4').catch(() => {});
-      videoFiles.forEach((file, i) => {
-        try { ffmpeg.FS('unlink', `input${i}.mp4`); } catch {}
-      });
-      if (audioFile) {
-        try { ffmpeg.FS('unlink', 'audio.mp3'); } catch {}
-      }
-
-      // Videoları ffmpeg dosya sistemine yükle
-      for (let i = 0; i < videoFiles.length; i++) {
-        const fileData = await fetchFile(videoFiles[i]);
-        await ffmpeg.FS('writeFile', `input${i}.mp4`, fileData);
-      }
-
-      // Audio varsa yükle
-      if (audioFile) {
-        const audioData = await fetchFile(audioFile);
-        await ffmpeg.FS('writeFile', 'audio.mp3', audioData);
-      }
-
-      // Kırpma değerleri (saniye)
-      const start = parseFloat(trimStartInput.value);
-      const end = parseFloat(trimEndInput.value);
-
-      // Seçili klip üzerinde kırpma yapacağız. Sadece tek klip üzerinde düzenleme yapılacak (basitlik için).
-      // İstersen tümünü birleştirip sonra kırpma yapılabilir.
-
-      // Burada sadece seçili klip için işlem yapacağız
-      const inputName = `input${selectedClipIndex}.mp4`;
-      const outputName = 'trimmed.mp4';
-
-      // ffmpeg komutu: seçili klibi kırp
-      await ffmpeg.run(
-        '-i', inputName,
-        '-ss', `${start}`,
-        '-to', `${end}`,
-        '-c', 'copy',
-        outputName
-      );
-
-      // Eğer audio varsa, müziği ekle ve ses seviyesini ayarla
-      if (audioFile) {
-        // Müziği ses seviyesine göre ayarla ve videoya ekle
-        const volume = parseFloat(volumeInput.value);
-
-        // outputName dosyasını yeni video dosyasına katacağız
-        const finalOutput = 'final_output.mp4';
-
-        // Müziği ffmpeg'e ekle
-        // Video ve sesi karıştır, video sabit kalsın (copy), ses filtre ile volume ayarı yapalım
-        await ffmpeg.run(
-          '-i', outputName,
-          '-i', 'audio.mp3',
-          '-filter_complex', `[1:a]volume=${volume}[a1]`,
-          '-map', '0:v',
-          '-map', '[a1]',
-          '-c:v', 'copy',
-          '-shortest',
-          finalOutput
-        );
-
-        // finalOutput'u okuyup indirme linki oluştur
-        const data = ffmpeg.FS('readFile', finalOutput);
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-        previewVideo.src = url;
-      } else {
-        // Audio yoksa sadece kırpılmış videoyu göster
-        const data = ffmpeg.FS('readFile', outputName);
-        const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
-        previewVideo.src = url;
-      }
-
-      alert('Video düzenleme tamamlandı. Önizlemeyi yukarıda izleyebilirsiniz.');
-
-    } catch (err) {
-      alert('Bir hata oluştu: ' + err.message);
-      console.error(err);
-    }
-
-    await showLoading(false);
-    processBtn.disabled = false;
-  });
-</script>
-
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const previewVideo = document.getElementById('preview-video');
+            const previewContainer = document.getElementById('preview-container');
+            const exportBtn = document.getElementById('export-btn');
+            const exportModal = document.getElementById('export-modal');
+            const cancelExport = document.getElementById('cancel-export');
+            const confirmExport = document.getElementById('confirm-export');
+            const videoTrack = document.getElementById('video-track');
+            const audioTrack = document.getElementById('audio-track');
+            const playhead = document.getElementById('playhead');
+            const timeline = document.getElementById('timeline');
+            const mediaItems = document.querySelectorAll('.media-item[data-type]');
+            const uploadItem = document.getElementById('upload-item');
+            const uploadModal = document.getElementById('upload-modal');
+            const uploadDropArea = document.getElementById('upload-drop-area');
+            const fileUpload = document.getElementById('file-upload');
+            const cancelUpload = document.getElementById('cancel-upload');
+            const dropMessage = document.getElementById('drop-message');
+            
+            // State
+            let clips = [];
+            let audioClips = [];
+            let isPlaying = false;
+            let currentTime = 0;
+            let timelineDuration = 30; // seconds
+            let mediaLibrary = [
+                {
+                    type: 'video',
+                    src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
+                    name: 'Örnek Video 1'
+                },
+                {
+                    type: 'video',
+                    src: 'https://samplelib.com/lib/preview/mp4/sample-10s.mp4',
+                    name: 'Örnek Video 2'
+                },
+                {
+                    type: 'audio',
+                    src: 'https://samplelib.com/lib/preview/mp3/sample-3s.mp3',
+                    name: 'Örnek Müzik'
+                }
+            ];
+            
+            // Initialize
+            initTimeline();
+            setupEventListeners();
+            
+            function initTimeline() {
+                timeline.style.width = `${timelineDuration * 40}px`; // 40px per second
+                updatePlayhead();
+            }
+            
+            function setupEventListeners() {
+                // Export modal
+                exportBtn.addEventListener('click', () => {
+                    exportModal.classList.remove('hidden');
+                });
+                
+                cancelExport.addEventListener('click', () => {
+                    exportModal.classList.add('hidden');
+                });
+                
+                confirmExport.addEventListener('click', () => {
+                    if (clips.length === 0) {
+                        alert('Lütfen önce video ekleyin!');
+                        return;
+                    }
+                    exportModal.classList.add('hidden');
+                    simulateExport();
+                });
+                
+                // Upload media
+                uploadItem.addEventListener('click', () => {
+                    uploadModal.classList.remove('hidden');
+                });
+                
+                cancelUpload.addEventListener('click', () => {
+                    uploadModal.classList.add('hidden');
+                });
+                
+                uploadDropArea.addEventListener('click', () => {
+                    fileUpload.click();
+                });
+                
+                fileUpload.addEventListener('change', handleFileUpload);
+                
+                // Drag and drop for upload
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    uploadDropArea.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadDropArea.addEventListener(eventName, highlight, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    uploadDropArea.addEventListener(eventName, unhighlight, false);
+                });
+                
+                uploadDropArea.addEventListener('drop', handleDrop, false);
+                
+                // Drag and drop to preview
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    previewContainer.addEventListener(eventName, preventDefaults, false);
+                });
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    previewContainer.addEventListener(eventName, () => {
+                        dropMessage.classList.remove('hidden');
+                        previewContainer.classList.add('drag-over');
+                    }, false);
+                });
+                
+                ['dragleave', 'drop'].forEach(eventName => {
+                    previewContainer.addEventListener(eventName, () => {
+                        dropMessage.classList.add('hidden');
+                        previewContainer.classList.remove('drag-over');
+                    }, false);
+                });
+                
+                previewContainer.addEventListener('drop', handlePreviewDrop, false);
+                
+                // Media library items
+                mediaItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const type = item.getAttribute('data-type');
+                        const src = item.getAttribute('data-src');
+                        
+                        if (type === 'video') {
+                            addVideoClip(src);
+                        } else if (type === 'audio') {
+                            addAudioClip(src);
+                        }
+                    });
+                });
+                
+                // Timeline interactions
+                timeline.addEventListener('click', (e) => {
+                    if (e.target === timeline) {
+                        const rect = timeline.getBoundingClientRect();
+                        const clickPosition = e.clientX - rect.left;
+                        const timelineWidth = rect.width;
+                        const newTime = (clickPosition / timelineWidth) * timelineDuration;
+                        
+                        currentTime = Math.min(newTime, timelineDuration);
+                        previewVideo.currentTime = currentTime;
+                        updatePlayhead();
+                        
+                        if (isPlaying) {
+                            previewVideo.play();
+                        }
+                    }
+                });
+                
+                // Preview controls
+                previewVideo.addEventListener('play', () => {
+                    isPlaying = true;
+                    requestAnimationFrame(updatePlayback);
+                });
+                
+                previewVideo.addEventListener('pause', () => {
+                    isPlaying = false;
+                });
+                
+                previewVideo.addEventListener('timeupdate', () => {
+                    currentTime = previewVideo.currentTime;
+                    updatePlayhead();
+                });
+                
+                previewVideo.addEventListener('ended', () => {
+                    isPlaying = false;
+                });
+            }
+            
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            function highlight() {
+                uploadDropArea.style.borderColor = 'var(--primary)';
+            }
+            
+            function unhighlight() {
+                uploadDropArea.style.borderColor = '#555';
+            }
+            
+            function handleDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                handleFiles(files);
+            }
+            
+            function handlePreviewDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('video/')) {
+                        const videoURL = URL.createObjectURL(file);
+                        previewVideo.src = videoURL;
+                        previewVideo.controls = true;
+                        
+                        // Add to timeline
+                        addVideoClip(videoURL);
+                    }
+                }
+            }
+            
+            function handleFileUpload(e) {
+                const files = e.target.files;
+                handleFiles(files);
+            }
+            
+            function handleFiles(files) {
+                if (files.length > 0) {
+                    const file = files[0];
+                    const fileType = file.type.split('/')[0];
+                    const fileURL = URL.createObjectURL(file);
+                    
+                    if (fileType === 'video') {
+                        addVideoClip(fileURL);
+                        mediaLibrary.push({
+                            type: 'video',
+                            src: fileURL,
+                            name: file.name
+                        });
+                        updateMediaLibrary();
+                    } else if (fileType === 'audio') {
+                        addAudioClip(fileURL);
+                        mediaLibrary.push({
+                            type: 'audio',
+                            src: fileURL,
+                            name: file.name
+                        });
+                        updateMediaLibrary();
+                    }
+                    
+                    uploadModal.classList.add('hidden');
+                }
+            }
+            
+            function updateMediaLibrary() {
+                const mediaLibraryContainer = document.querySelector('.media-library');
+                mediaLibraryContainer.innerHTML = '';
+                
+                mediaLibrary.forEach((media, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'media-item';
+                    item.setAttribute('data-type', media.type);
+                    item.setAttribute('data-src', media.src);
+                    
+                    const thumbnail = document.createElement('div');
+                    thumbnail.className = 'media-thumbnail';
+                    thumbnail.textContent = media.type === 'video' ? 'Video' : 'Müzik';
+                    
+                    const label = document.createElement('div');
+                    label.className = 'media-label';
+                    label.textContent = media.name;
+                    
+                    item.appendChild(thumbnail);
+                    item.appendChild(label);
+                    
+                    item.addEventListener('click', () => {
+                        if (media.type === 'video') {
+                            addVideoClip(media.src);
+                        } else if (media.type === 'audio') {
+                            addAudioClip(media.src);
+                        }
+                    });
+                    
+                    mediaLibraryContainer.appendChild(item);
+                });
+                
+                // Add upload button back
+                mediaLibraryContainer.appendChild(uploadItem);
+            }
+            
+            function addVideoClip(src) {
+                const clipId = 'clip-' + Date.now();
+                const clipDuration = 5; // seconds (default)
+                
+                const clip = document.createElement('div');
+                clip.className = 'video-clip';
+                clip.id = clipId;
+                clip.style.width = `${clipDuration * 40}px`;
+                clip.textContent = 'Video';
+                
+                // Position at the end of existing clips
+                let lastClipEnd = 0;
+                if (clips.length > 0) {
+                    const lastClip = clips[clips.length - 1];
+                    const lastClipRect = lastClip.getBoundingClientRect();
+                    const timelineRect = timeline.getBoundingClientRect();
+                    lastClipEnd = lastClipRect.right - timelineRect.left;
+                }
+                
+                clip.style.left = `${lastClipEnd}px`;
+                
+                // Make draggable
+                clip.draggable = true;
+                clip.addEventListener('dragstart', handleDragStart);
+                
+                // Add resize handles
+                addResizeHandles(clip);
+                
+                videoTrack.appendChild(clip);
+                clips.push(clip);
+                
+                // For demo, set a video source if none exists
+                if (!previewVideo.src) {
+                    previewVideo.src = src;
+                    previewVideo.controls = true;
+                }
+            }
+            
+            function addAudioClip(src) {
+                const clipId = 'audio-' + Date.now();
+                const clipDuration = 10; // seconds (default)
+                
+                const clip = document.createElement('div');
+                clip.className = 'audio-clip';
+                clip.id = clipId;
+                clip.style.width = `${clipDuration * 40}px`;
+                clip.textContent = 'Müzik';
+                
+                // Position at the end of existing clips
+                let lastClipEnd = 0;
+                if (audioClips.length > 0) {
+                    const lastClip = audioClips[audioClips.length - 1];
+                    const lastClipRect = lastClip.getBoundingClientRect();
+                    const timelineRect = timeline.getBoundingClientRect();
+                    lastClipEnd = lastClipRect.right - timelineRect.left;
+                }
+                
+                clip.style.left = `${lastClipEnd}px`;
+                
+                // Make draggable
+                clip.draggable = true;
+                clip.addEventListener('dragstart', handleDragStart);
+                
+                // Add resize handles
+                addResizeHandles(clip);
+                
+                audioTrack.appendChild(clip);
+                audioClips.push(clip);
+            }
+            
+            function handleDragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.id);
+                e.dataTransfer.effectAllowed = 'move';
+            }
+            
+            function addResizeHandles(clip) {
+                // Left resize handle
+                const leftHandle = document.createElement('div');
+                leftHandle.style.position = 'absolute';
+                leftHandle.style.left = '0';
+                leftHandle.style.top = '0';
+                leftHandle.style.bottom = '0';
+                leftHandle.style.width = '5px';
+                leftHandle.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                leftHandle.style.cursor = 'w-resize';
+                
+                // Right resize handle
+                const rightHandle = document.createElement('div');
+                rightHandle.style.position = 'absolute';
+                rightHandle.style.right = '0';
+                rightHandle.style.top = '0';
+                rightHandle.style.bottom = '0';
+                rightHandle.style.width = '5px';
+                rightHandle.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+                rightHandle.style.cursor = 'e-resize';
+                
+                clip.appendChild(leftHandle);
+                clip.appendChild(rightHandle);
+                
+                // TODO: Add resize functionality
+            }
+            
+            function updatePlayhead() {
+                const timelineWidth = timeline.offsetWidth;
+                const position = (currentTime / timelineDuration) * timelineWidth;
+                playhead.style.left = `${position}px`;
+            }
+            
+            function updatePlayback() {
+                if (!isPlaying) return;
+                
+                currentTime = previewVideo.currentTime;
+                updatePlayhead();
+                
+                if (currentTime < timelineDuration) {
+                    requestAnimationFrame(updatePlayback);
+                } else {
+                    previewVideo.pause();
+                    isPlaying = false;
+                }
+            }
+            
+            function simulateExport() {
+                const progress = document.createElement('div');
+                progress.style.position = 'fixed';
+                progress.style.bottom = '20px';
+                progress.style.right = '20px';
+                progress.style.backgroundColor = 'var(--panel-bg)';
+                progress.style.padding = '15px';
+                progress.style.borderRadius = '8px';
+                progress.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
+                progress.style.zIndex = '1000';
+                
+                const progressBar = document.createElement('div');
+                progressBar.style.width = '200px';
+                progressBar.style.height = '10px';
+                progressBar.style.backgroundColor = '#333';
+                progressBar.style.borderRadius = '5px';
+                progressBar.style.marginTop = '10px';
+                progressBar.style.overflow = 'hidden';
+                
+                const progressFill = document.createElement('div');
+                progressFill.style.width = '0%';
+                progressFill.style.height = '100%';
+                progressFill.style.backgroundColor = 'var(--primary)';
+                progressFill.style.transition = 'width 0.1s';
+                
+                progressBar.appendChild(progressFill);
+                progress.innerHTML = '<p>Video işleniyor...</p>';
+                progress.appendChild(progressBar);
+                document.body.appendChild(progress);
+                
+                let width = 0;
+                const interval = setInterval(() => {
+                    width += 5;
+                    progressFill.style.width = `${width}%`;
+                    
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        setTimeout(() => {
+                            progress.remove();
+                            alert('Video başarıyla dışa aktarıldı! (Simülasyon)');
+                        }, 500);
+                    }
+                }, 100);
+            }
+        });
+    </script>
 </body>
 </html>
