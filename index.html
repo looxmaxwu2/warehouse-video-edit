@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CapCut Clone | Video Editor</title>
+    <title>Video Editor</title>
     <style>
         :root {
             --primary: #fe2c55;
@@ -42,18 +42,6 @@
             font-size: 24px;
             font-weight: bold;
             color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .logo span {
-            color: white;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 15px;
         }
         
         .btn {
@@ -62,18 +50,8 @@
             border: none;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.2s;
-        }
-        
-        .btn-primary {
             background-color: var(--primary);
             color: white;
-        }
-        
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid #555;
-            color: var(--text-light);
         }
         
         .main-container {
@@ -87,42 +65,14 @@
             background-color: var(--panel-bg);
             padding: 15px;
             overflow-y: auto;
-        }
-        
-        .tab-buttons {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #333;
-        }
-        
-        .tab-btn {
-            padding: 10px 15px;
-            background: none;
-            border: none;
-            color: var(--text-gray);
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .tab-btn.active {
-            color: var(--text-light);
-            font-weight: 500;
-        }
-        
-        .tab-btn.active::after {
-            content: '';
-            position: absolute;
-            bottom: -1px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: var(--primary);
+            border-right: 1px solid #333;
         }
         
         .media-library {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
+            margin-top: 15px;
         }
         
         .media-item {
@@ -140,7 +90,6 @@
         .media-thumbnail {
             width: 100%;
             height: 80px;
-            object-fit: cover;
             background-color: #333;
             display: flex;
             align-items: center;
@@ -205,13 +154,11 @@
             height: 100%;
             background-color: var(--primary);
             border-radius: 4px;
-            cursor: grab;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
             font-size: 12px;
-            user-select: none;
         }
         
         .audio-clip {
@@ -219,13 +166,11 @@
             height: 100%;
             background-color: #25f4ee;
             border-radius: 4px;
-            cursor: grab;
             display: flex;
             align-items: center;
             justify-content: center;
             color: black;
             font-size: 12px;
-            user-select: none;
         }
         
         .playhead {
@@ -235,7 +180,6 @@
             width: 2px;
             background-color: white;
             z-index: 10;
-            pointer-events: none;
         }
         
         .tools-panel {
@@ -248,156 +192,54 @@
         }
         
         .tool-btn {
-            background: none;
+            background: rgba(255, 255, 255, 0.1);
             border: none;
             color: var(--text-light);
             padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-size: 12px;
-            gap: 4px;
             min-width: 60px;
-            background-color: rgba(255, 255, 255, 0.1);
+            font-size: 12px;
         }
         
-        .tool-btn:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        
-        .tool-btn i {
-            font-size: 20px;
-        }
-        
-        .hidden {
-            display: none;
-        }
-        
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        .modal-content {
-            background-color: var(--panel-bg);
-            border-radius: 8px;
-            padding: 20px;
-            width: 400px;
-            max-width: 90%;
-        }
-        
-        .modal-title {
-            font-size: 18px;
-            margin-bottom: 20px;
-        }
-        
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .drag-over {
-            border: 2px dashed var(--primary) !important;
-        }
-
+        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-
         ::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        #drop-message {
-            position: absolute;
-            color: white;
-            background: rgba(0,0,0,0.7);
-            padding: 20px;
-            border-radius: 10px;
-            pointer-events: none;
-            font-size: 18px;
-        }
-        
-        #upload-drop-area {
-            border: 2px dashed #555;
-            padding: 30px;
-            text-align: center;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: border-color 0.3s;
-        }
-        
-        #upload-drop-area:hover {
-            border-color: var(--primary);
         }
     </style>
 </head>
 <body>
     <header>
-        <div class="logo">
-            <span>Cap</span>Clone
-        </div>
-        <div class="header-actions">
-            <button class="btn btn-primary" id="export-btn">Dışa Aktar</button>
-        </div>
+        <div class="logo">Video Editor</div>
+        <button class="btn" id="export-btn">Dışa Aktar</button>
     </header>
     
     <div class="main-container">
         <div class="sidebar">
-            <div class="tab-buttons">
-                <button class="tab-btn active" data-tab="media">Medya</button>
-                <button class="tab-btn" data-tab="audio">Sesler</button>
-                <button class="tab-btn" data-tab="text">Metin</button>
-            </div>
-            
-            <div id="media-tab" class="tab-content">
-                <div class="media-library">
-                    <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-5s.mp4">
-                        <div class="media-thumbnail">Video 1</div>
-                        <div class="media-label">Örnek Video 1</div>
-                    </div>
-                    <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-10s.mp4">
-                        <div class="media-thumbnail">Video 2</div>
-                        <div class="media-label">Örnek Video 2</div>
-                    </div>
-                    <div class="media-item" data-type="audio" data-src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3">
-                        <div class="media-thumbnail">Müzik 1</div>
-                        <div class="media-label">Örnek Müzik</div>
-                    </div>
-                    <div class="media-item" id="upload-item">
-                        <div class="media-thumbnail">+ Yükle</div>
-                        <div class="media-label">Kendi Medyan</div>
-                    </div>
+            <div class="media-library">
+                <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-5s.mp4">
+                    <div class="media-thumbnail">Video 1</div>
+                    <div class="media-label">Örnek Video</div>
+                </div>
+                <div class="media-item" data-type="audio" data-src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3">
+                    <div class="media-thumbnail">Müzik</div>
+                    <div class="media-label">Örnek Müzik</div>
+                </div>
+                <div class="media-item" id="upload-btn">
+                    <div class="media-thumbnail">+ Yükle</div>
+                    <div class="media-label">Kendi Dosyan</div>
                 </div>
             </div>
         </div>
         
         <div class="editor-area">
-            <div class="preview-container" id="preview-container">
-                <video id="preview-video"></video>
-                <div id="drop-message" class="hidden">Videoyu buraya bırakın</div>
+            <div class="preview-container">
+                <video id="preview-video" controls></video>
             </div>
             
             <div class="timeline-container">
@@ -409,71 +251,10 @@
             </div>
             
             <div class="tools-panel">
-                <button class="tool-btn" id="cut-btn">
-                    <span>Kes</span>
-                </button>
-                <button class="tool-btn" id="delete-btn">
-                    <span>Sil</span>
-                </button>
-                <button class="tool-btn" id="split-btn">
-                    <span>Ayır</span>
-                </button>
-                <button class="tool-btn" id="speed-btn">
-                    <span>Hız</span>
-                </button>
-                <button class="tool-btn" id="volume-btn">
-                    <span>Ses</span>
-                </button>
-                <button class="tool-btn" id="text-btn">
-                    <span>Metin</span>
-                </button>
-                <button class="tool-btn" id="effects-btn">
-                    <span>Efektler</span>
-                </button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Export Modal -->
-    <div class="modal hidden" id="export-modal">
-        <div class="modal-content">
-            <div class="modal-title">Dışa Aktar</div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">Video çözünürlüğü:</label>
-                <select style="width: 100%; padding: 8px; background: #333; color: white; border: none; border-radius: 4px;">
-                    <option>1080p (Full HD)</option>
-                    <option>720p (HD)</option>
-                    <option selected>480p (SD)</option>
-                </select>
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label style="display: block; margin-bottom: 5px;">Dosya formatı:</label>
-                <select style="width: 100%; padding: 8px; background: #333; color: white; border: none; border-radius: 4px;">
-                    <option selected>MP4</option>
-                    <option>MOV</option>
-                    <option>GIF</option>
-                </select>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-outline" id="cancel-export">İptal</button>
-                <button class="btn btn-primary" id="confirm-export">Dışa Aktar</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Upload Modal -->
-    <div class="modal hidden" id="upload-modal">
-        <div class="modal-content">
-            <div class="modal-title">Medya Yükle</div>
-            <div style="margin-bottom: 15px;">
-                <input type="file" id="file-upload" accept="video/*,audio/*" style="display: none;">
-                <div id="upload-drop-area">
-                    <p>Dosyaları sürükleyip bırakın veya tıklayın</p>
-                    <p style="font-size: 12px; color: var(--text-gray);">MP4, MOV, MP3 desteklenir</p>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-outline" id="cancel-upload">İptal</button>
+                <button class="tool-btn" id="cut-btn">Kes</button>
+                <button class="tool-btn" id="split-btn">Ayır</button>
+                <button class="tool-btn" id="volume-btn">Ses</button>
+                <button class="tool-btn" id="text-btn">Metin</button>
             </div>
         </div>
     </div>
@@ -482,381 +263,59 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Elements
             const previewVideo = document.getElementById('preview-video');
-            const previewContainer = document.getElementById('preview-container');
             const exportBtn = document.getElementById('export-btn');
-            const exportModal = document.getElementById('export-modal');
-            const cancelExport = document.getElementById('cancel-export');
-            const confirmExport = document.getElementById('confirm-export');
             const videoTrack = document.getElementById('video-track');
             const audioTrack = document.getElementById('audio-track');
-            const playhead = document.getElementById('playhead');
-            const timeline = document.getElementById('timeline');
             const mediaItems = document.querySelectorAll('.media-item[data-type]');
-            const uploadItem = document.getElementById('upload-item');
-            const uploadModal = document.getElementById('upload-modal');
-            const uploadDropArea = document.getElementById('upload-drop-area');
-            const fileUpload = document.getElementById('file-upload');
-            const cancelUpload = document.getElementById('cancel-upload');
-            const dropMessage = document.getElementById('drop-message');
+            const uploadBtn = document.getElementById('upload-btn');
             
             // State
             let clips = [];
             let audioClips = [];
-            let isPlaying = false;
-            let currentTime = 0;
-            let timelineDuration = 30; // seconds
-            let mediaLibrary = [
-                {
-                    type: 'video',
-                    src: 'https://samplelib.com/lib/preview/mp4/sample-5s.mp4',
-                    name: 'Örnek Video 1'
-                },
-                {
-                    type: 'video',
-                    src: 'https://samplelib.com/lib/preview/mp4/sample-10s.mp4',
-                    name: 'Örnek Video 2'
-                },
-                {
-                    type: 'audio',
-                    src: 'https://samplelib.com/lib/preview/mp3/sample-3s.mp3',
-                    name: 'Örnek Müzik'
-                }
-            ];
             
-            // Initialize
-            initTimeline();
-            setupEventListeners();
-            
-            function initTimeline() {
-                timeline.style.width = `${timelineDuration * 40}px`; // 40px per second
-                updatePlayhead();
-            }
-            
-            function setupEventListeners() {
-                // Export modal
-                exportBtn.addEventListener('click', () => {
-                    exportModal.classList.remove('hidden');
-                });
-                
-                cancelExport.addEventListener('click', () => {
-                    exportModal.classList.add('hidden');
-                });
-                
-                confirmExport.addEventListener('click', () => {
-                    if (clips.length === 0) {
-                        alert('Lütfen önce video ekleyin!');
-                        return;
-                    }
-                    exportModal.classList.add('hidden');
-                    simulateExport();
-                });
-                
-                // Upload media
-                uploadItem.addEventListener('click', () => {
-                    uploadModal.classList.remove('hidden');
-                });
-                
-                cancelUpload.addEventListener('click', () => {
-                    closeUploadModal();
-                });
-                
-                uploadDropArea.addEventListener('click', () => {
-                    fileUpload.click();
-                });
-                
-                fileUpload.addEventListener('change', handleFileUpload);
-                
-                // Drag and drop for upload
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                    uploadDropArea.addEventListener(eventName, preventDefaults, false);
-                    previewContainer.addEventListener(eventName, preventDefaults, false);
-                });
-                
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    uploadDropArea.addEventListener(eventName, () => {
-                        uploadDropArea.classList.add('drag-over');
-                    }, false);
+            // Event listeners
+            mediaItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const type = item.getAttribute('data-type');
+                    const src = item.getAttribute('data-src');
                     
-                    previewContainer.addEventListener(eventName, () => {
-                        dropMessage.classList.remove('hidden');
-                        previewContainer.classList.add('drag-over');
-                    }, false);
-                });
-                
-                ['dragleave', 'drop'].forEach(eventName => {
-                    uploadDropArea.addEventListener(eventName, () => {
-                        uploadDropArea.classList.remove('drag-over');
-                    }, false);
-                    
-                    previewContainer.addEventListener(eventName, () => {
-                        dropMessage.classList.add('hidden');
-                        previewContainer.classList.remove('drag-over');
-                    }, false);
-                });
-                
-                uploadDropArea.addEventListener('drop', handleDrop, false);
-                previewContainer.addEventListener('drop', handlePreviewDrop, false);
-                
-                // Media library items
-                mediaItems.forEach(item => {
-                    item.addEventListener('click', () => {
-                        const type = item.getAttribute('data-type');
-                        const src = item.getAttribute('data-src');
-                        
-                        if (type === 'video') {
-                            addVideoClip(src);
-                        } else if (type === 'audio') {
-                            addAudioClip(src);
+                    if (type === 'video') {
+                        addVideoClip(src);
+                        if (!previewVideo.src) {
+                            previewVideo.src = src;
                         }
-                        closeUploadModal(); // DÜZELTME: Medya seçince modal kapanacak
-                    });
+                    } else if (type === 'audio') {
+                        addAudioClip(src);
+                    }
                 });
-                
-                // Timeline interactions
-                timeline.addEventListener('click', (e) => {
-                    if (e.target === timeline) {
-                        const rect = timeline.getBoundingClientRect();
-                        const clickPosition = e.clientX - rect.left;
-                        const timelineWidth = rect.width;
-                        const newTime = (clickPosition / timelineWidth) * timelineDuration;
-                        
-                        currentTime = Math.min(newTime, timelineDuration);
-                        previewVideo.currentTime = currentTime;
-                        updatePlayhead();
-                        
-                        if (isPlaying) {
-                            previewVideo.play();
+            });
+            
+            uploadBtn.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'video/*,audio/*';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const url = URL.createObjectURL(file);
+                        if (file.type.startsWith('video/')) {
+                            addVideoClip(url);
+                            previewVideo.src = url;
+                        } else if (file.type.startsWith('audio/')) {
+                            addAudioClip(url);
                         }
                     }
-                });
-                
-                // Preview controls
-                previewVideo.addEventListener('play', () => {
-                    isPlaying = true;
-                    requestAnimationFrame(updatePlayback);
-                });
-                
-                previewVideo.addEventListener('pause', () => {
-                    isPlaying = false;
-                });
-                
-                previewVideo.addEventListener('timeupdate', () => {
-                    currentTime = previewVideo.currentTime;
-                    updatePlayhead();
-                });
-                
-                previewVideo.addEventListener('ended', () => {
-                    isPlaying = false;
-                });
-            }
+                };
+                input.click();
+            });
             
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-            
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                handleFiles(files);
-            }
-            
-            function handlePreviewDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                
-                if (files.length > 0) {
-                    const file = files[0];
-                    if (file.type.startsWith('video/')) {
-                        const videoURL = URL.createObjectURL(file);
-                        previewVideo.src = videoURL;
-                        previewVideo.controls = true;
-                        
-                        // Add to timeline
-                        addVideoClip(videoURL);
-                        
-                        // Add to media library
-                        mediaLibrary.push({
-                            type: 'video',
-                            src: videoURL,
-                            name: file.name
-                        });
-                        updateMediaLibrary();
-                    }
-                }
-            }
-            
-            function handleFileUpload(e) {
-                const files = e.target.files;
-                handleFiles(files);
-            }
-            
-            function handleFiles(files) {
-                if (files.length > 0) {
-                    const file = files[0];
-                    const fileType = file.type.split('/')[0];
-                    const fileURL = URL.createObjectURL(file);
-                    
-                    if (fileType === 'video') {
-                        addVideoClip(fileURL);
-                        mediaLibrary.push({
-                            type: 'video',
-                            src: fileURL,
-                            name: file.name
-                        });
-                    } else if (fileType === 'audio') {
-                        addAudioClip(fileURL);
-                        mediaLibrary.push({
-                            type: 'audio',
-                            src: fileURL,
-                            name: file.name
-                        });
-                    }
-                    
-                    updateMediaLibrary();
-                    closeUploadModal();
-                }
-            }
-            
-            function closeUploadModal() {
-                uploadModal.classList.add('hidden');
-                fileUpload.value = '';
-                uploadDropArea.classList.remove('drag-over');
-            }
-            
-            function updateMediaLibrary() {
-                const mediaLibraryContainer = document.querySelector('.media-library');
-                mediaLibraryContainer.innerHTML = '';
-                
-                mediaLibrary.forEach((media, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'media-item';
-                    item.setAttribute('data-type', media.type);
-                    item.setAttribute('data-src', media.src);
-                    
-                    const thumbnail = document.createElement('div');
-                    thumbnail.className = 'media-thumbnail';
-                    thumbnail.textContent = media.type === 'video' ? 'Video' : 'Müzik';
-                    
-                    const label = document.createElement('div');
-                    label.className = 'media-label';
-                    label.textContent = media.name;
-                    
-                    item.appendChild(thumbnail);
-                    item.appendChild(label);
-                    
-                    item.addEventListener('click', () => {
-                        if (media.type === 'video') {
-                            addVideoClip(media.src);
-                        } else if (media.type === 'audio') {
-                            addAudioClip(media.src);
-                        }
-                        closeUploadModal();
-                    });
-                    
-                    mediaLibraryContainer.appendChild(item);
-                });
-                
-                // Add upload button back
-                const uploadItemClone = uploadItem.cloneNode(true);
-                uploadItemClone.addEventListener('click', () => {
-                    uploadModal.classList.remove('hidden');
-                });
-                mediaLibraryContainer.appendChild(uploadItemClone);
-                uploadItem.remove();
-                uploadItem = uploadItemClone;
-            }
-            
-            function addVideoClip(src) {
-                const clipId = 'clip-' + Date.now();
-                const clipDuration = 5; // seconds (default)
-                
-                const clip = document.createElement('div');
-                clip.className = 'video-clip';
-                clip.id = clipId;
-                clip.style.width = `${clipDuration * 40}px`;
-                clip.textContent = 'Video';
-                
-                // Position at the end of existing clips
-                let lastClipEnd = 0;
-                if (clips.length > 0) {
-                    const lastClip = clips[clips.length - 1];
-                    const lastClipRect = lastClip.getBoundingClientRect();
-                    const timelineRect = timeline.getBoundingClientRect();
-                    lastClipEnd = lastClipRect.right - timelineRect.left;
+            exportBtn.addEventListener('click', () => {
+                if (clips.length === 0) {
+                    alert('Lütfen önce video ekleyin!');
+                    return;
                 }
                 
-                clip.style.left = `${lastClipEnd}px`;
-                
-                // Make draggable
-                clip.draggable = true;
-                clip.addEventListener('dragstart', handleDragStart);
-                
-                videoTrack.appendChild(clip);
-                clips.push(clip);
-                
-                // Set video source if none exists
-                if (!previewVideo.src) {
-                    previewVideo.src = src;
-                    previewVideo.controls = true;
-                }
-            }
-            
-            function addAudioClip(src) {
-                const clipId = 'audio-' + Date.now();
-                const clipDuration = 10; // seconds (default)
-                
-                const clip = document.createElement('div');
-                clip.className = 'audio-clip';
-                clip.id = clipId;
-                clip.style.width = `${clipDuration * 40}px`;
-                clip.textContent = 'Müzik';
-                
-                // Position at the end of existing clips
-                let lastClipEnd = 0;
-                if (audioClips.length > 0) {
-                    const lastClip = audioClips[audioClips.length - 1];
-                    const lastClipRect = lastClip.getBoundingClientRect();
-                    const timelineRect = timeline.getBoundingClientRect();
-                    lastClipEnd = lastClipRect.right - timelineRect.left;
-                }
-                
-                clip.style.left = `${lastClipEnd}px`;
-                
-                // Make draggable
-                clip.draggable = true;
-                clip.addEventListener('dragstart', handleDragStart);
-                
-                audioTrack.appendChild(clip);
-                audioClips.push(clip);
-            }
-            
-            function handleDragStart(e) {
-                e.dataTransfer.setData('text/plain', e.target.id);
-                e.dataTransfer.effectAllowed = 'move';
-            }
-            
-            function updatePlayhead() {
-                const timelineWidth = timeline.offsetWidth;
-                const position = (currentTime / timelineDuration) * timelineWidth;
-                playhead.style.left = `${position}px`;
-            }
-            
-            function updatePlayback() {
-                if (!isPlaying) return;
-                
-                currentTime = previewVideo.currentTime;
-                updatePlayhead();
-                
-                if (currentTime < timelineDuration) {
-                    requestAnimationFrame(updatePlayback);
-                } else {
-                    previewVideo.pause();
-                    isPlaying = false;
-                }
-            }
-            
-            function simulateExport() {
+                // Simulate export
                 const progress = document.createElement('div');
                 progress.style.position = 'fixed';
                 progress.style.bottom = '20px';
@@ -865,40 +324,33 @@
                 progress.style.padding = '15px';
                 progress.style.borderRadius = '8px';
                 progress.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-                progress.style.zIndex = '1000';
-                
-                const progressBar = document.createElement('div');
-                progressBar.style.width = '200px';
-                progressBar.style.height = '10px';
-                progressBar.style.backgroundColor = '#333';
-                progressBar.style.borderRadius = '5px';
-                progressBar.style.marginTop = '10px';
-                progressBar.style.overflow = 'hidden';
-                
-                const progressFill = document.createElement('div');
-                progressFill.style.width = '0%';
-                progressFill.style.height = '100%';
-                progressFill.style.backgroundColor = 'var(--primary)';
-                progressFill.style.transition = 'width 0.1s';
-                
-                progressBar.appendChild(progressFill);
-                progress.innerHTML = '<p>Video işleniyor...</p>';
-                progress.appendChild(progressBar);
+                progress.innerHTML = '<p>Video dışa aktarıldı! (Simülasyon)</p>';
                 document.body.appendChild(progress);
                 
-                let width = 0;
-                const interval = setInterval(() => {
-                    width += 5;
-                    progressFill.style.width = `${width}%`;
-                    
-                    if (width >= 100) {
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            progress.remove();
-                            alert('Video başarıyla dışa aktarıldı! (Simülasyon)');
-                        }, 500);
-                    }
-                }, 100);
+                setTimeout(() => {
+                    progress.remove();
+                }, 3000);
+            });
+            
+            // Functions
+            function addVideoClip(src) {
+                const clip = document.createElement('div');
+                clip.className = 'video-clip';
+                clip.style.width = '200px';
+                clip.style.left = `${clips.length * 210}px`;
+                clip.textContent = 'Video Klibi';
+                videoTrack.appendChild(clip);
+                clips.push(clip);
+            }
+            
+            function addAudioClip(src) {
+                const clip = document.createElement('div');
+                clip.className = 'audio-clip';
+                clip.style.width = '200px';
+                clip.style.left = `${audioClips.length * 210}px`;
+                clip.textContent = 'Müzik';
+                audioTrack.appendChild(clip);
+                audioClips.push(clip);
             }
         });
     </script>
