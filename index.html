@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CapCut Clone | GitHub</title>
+    <title>CapCut Clone | Video Editor</title>
     <style>
         :root {
             --primary: #fe2c55;
@@ -275,7 +275,6 @@
             display: none;
         }
         
-        /* Modal */
         .modal {
             position: fixed;
             top: 0;
@@ -309,12 +308,10 @@
             margin-top: 20px;
         }
 
-        /* Drag and drop */
         .drag-over {
             border: 2px dashed var(--primary) !important;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
@@ -332,12 +329,35 @@
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
+
+        #drop-message {
+            position: absolute;
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 20px;
+            border-radius: 10px;
+            pointer-events: none;
+            font-size: 18px;
+        }
+        
+        #upload-drop-area {
+            border: 2px dashed #555;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        
+        #upload-drop-area:hover {
+            border-color: var(--primary);
+        }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">
-            <span>Video</span>Editor
+            <span>Cap</span>Clone
         </div>
         <div class="header-actions">
             <button class="btn btn-primary" id="export-btn">Dışa Aktar</button>
@@ -377,9 +397,7 @@
         <div class="editor-area">
             <div class="preview-container" id="preview-container">
                 <video id="preview-video"></video>
-                <div id="drop-message" class="hidden" style="position: absolute; color: white; background: rgba(0,0,0,0.7); padding: 20px; border-radius: 10px; pointer-events: none;">
-                    Videoyu buraya bırakın
-                </div>
+                <div id="drop-message" class="hidden">Videoyu buraya bırakın</div>
             </div>
             
             <div class="timeline-container">
@@ -449,7 +467,7 @@
             <div class="modal-title">Medya Yükle</div>
             <div style="margin-bottom: 15px;">
                 <input type="file" id="file-upload" accept="video/*,audio/*" style="display: none;">
-                <div style="border: 2px dashed #555; padding: 30px; text-align: center; border-radius: 8px; cursor: pointer;" id="upload-drop-area">
+                <div id="upload-drop-area">
                     <p>Dosyaları sürükleyip bırakın veya tıklayın</p>
                     <p style="font-size: 12px; color: var(--text-gray);">MP4, MOV, MP3 desteklenir</p>
                 </div>
@@ -539,7 +557,7 @@
                 });
                 
                 cancelUpload.addEventListener('click', () => {
-                    uploadModal.classList.add('hidden');
+                    closeUploadModal();
                 });
                 
                 uploadDropArea.addEventListener('click', () => {
@@ -551,24 +569,14 @@
                 // Drag and drop for upload
                 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                     uploadDropArea.addEventListener(eventName, preventDefaults, false);
-                });
-                
-                ['dragenter', 'dragover'].forEach(eventName => {
-                    uploadDropArea.addEventListener(eventName, highlight, false);
-                });
-                
-                ['dragleave', 'drop'].forEach(eventName => {
-                    uploadDropArea.addEventListener(eventName, unhighlight, false);
-                });
-                
-                uploadDropArea.addEventListener('drop', handleDrop, false);
-                
-                // Drag and drop to preview
-                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                     previewContainer.addEventListener(eventName, preventDefaults, false);
                 });
                 
                 ['dragenter', 'dragover'].forEach(eventName => {
+                    uploadDropArea.addEventListener(eventName, () => {
+                        uploadDropArea.classList.add('drag-over');
+                    }, false);
+                    
                     previewContainer.addEventListener(eventName, () => {
                         dropMessage.classList.remove('hidden');
                         previewContainer.classList.add('drag-over');
@@ -576,12 +584,17 @@
                 });
                 
                 ['dragleave', 'drop'].forEach(eventName => {
+                    uploadDropArea.addEventListener(eventName, () => {
+                        uploadDropArea.classList.remove('drag-over');
+                    }, false);
+                    
                     previewContainer.addEventListener(eventName, () => {
                         dropMessage.classList.add('hidden');
                         previewContainer.classList.remove('drag-over');
                     }, false);
                 });
                 
+                uploadDropArea.addEventListener('drop', handleDrop, false);
                 previewContainer.addEventListener('drop', handlePreviewDrop, false);
                 
                 // Media library items
@@ -595,6 +608,7 @@
                         } else if (type === 'audio') {
                             addAudioClip(src);
                         }
+                        closeUploadModal(); // DÜZELTME: Medya seçince modal kapanacak
                     });
                 });
                 
@@ -641,14 +655,6 @@
                 e.stopPropagation();
             }
             
-            function highlight() {
-                uploadDropArea.style.borderColor = 'var(--primary)';
-            }
-            
-            function unhighlight() {
-                uploadDropArea.style.borderColor = '#555';
-            }
-            
             function handleDrop(e) {
                 const dt = e.dataTransfer;
                 const files = dt.files;
@@ -668,6 +674,14 @@
                         
                         // Add to timeline
                         addVideoClip(videoURL);
+                        
+                        // Add to media library
+                        mediaLibrary.push({
+                            type: 'video',
+                            src: videoURL,
+                            name: file.name
+                        });
+                        updateMediaLibrary();
                     }
                 }
             }
@@ -690,7 +704,6 @@
                             src: fileURL,
                             name: file.name
                         });
-                        updateMediaLibrary();
                     } else if (fileType === 'audio') {
                         addAudioClip(fileURL);
                         mediaLibrary.push({
@@ -698,11 +711,17 @@
                             src: fileURL,
                             name: file.name
                         });
-                        updateMediaLibrary();
                     }
                     
-                    uploadModal.classList.add('hidden');
+                    updateMediaLibrary();
+                    closeUploadModal();
                 }
+            }
+            
+            function closeUploadModal() {
+                uploadModal.classList.add('hidden');
+                fileUpload.value = '';
+                uploadDropArea.classList.remove('drag-over');
             }
             
             function updateMediaLibrary() {
@@ -732,13 +751,20 @@
                         } else if (media.type === 'audio') {
                             addAudioClip(media.src);
                         }
+                        closeUploadModal();
                     });
                     
                     mediaLibraryContainer.appendChild(item);
                 });
                 
                 // Add upload button back
-                mediaLibraryContainer.appendChild(uploadItem);
+                const uploadItemClone = uploadItem.cloneNode(true);
+                uploadItemClone.addEventListener('click', () => {
+                    uploadModal.classList.remove('hidden');
+                });
+                mediaLibraryContainer.appendChild(uploadItemClone);
+                uploadItem.remove();
+                uploadItem = uploadItemClone;
             }
             
             function addVideoClip(src) {
@@ -766,13 +792,10 @@
                 clip.draggable = true;
                 clip.addEventListener('dragstart', handleDragStart);
                 
-                // Add resize handles
-                addResizeHandles(clip);
-                
                 videoTrack.appendChild(clip);
                 clips.push(clip);
                 
-                // For demo, set a video source if none exists
+                // Set video source if none exists
                 if (!previewVideo.src) {
                     previewVideo.src = src;
                     previewVideo.controls = true;
@@ -804,9 +827,6 @@
                 clip.draggable = true;
                 clip.addEventListener('dragstart', handleDragStart);
                 
-                // Add resize handles
-                addResizeHandles(clip);
-                
                 audioTrack.appendChild(clip);
                 audioClips.push(clip);
             }
@@ -814,33 +834,6 @@
             function handleDragStart(e) {
                 e.dataTransfer.setData('text/plain', e.target.id);
                 e.dataTransfer.effectAllowed = 'move';
-            }
-            
-            function addResizeHandles(clip) {
-                // Left resize handle
-                const leftHandle = document.createElement('div');
-                leftHandle.style.position = 'absolute';
-                leftHandle.style.left = '0';
-                leftHandle.style.top = '0';
-                leftHandle.style.bottom = '0';
-                leftHandle.style.width = '5px';
-                leftHandle.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                leftHandle.style.cursor = 'w-resize';
-                
-                // Right resize handle
-                const rightHandle = document.createElement('div');
-                rightHandle.style.position = 'absolute';
-                rightHandle.style.right = '0';
-                rightHandle.style.top = '0';
-                rightHandle.style.bottom = '0';
-                rightHandle.style.width = '5px';
-                rightHandle.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-                rightHandle.style.cursor = 'e-resize';
-                
-                clip.appendChild(leftHandle);
-                clip.appendChild(rightHandle);
-                
-                // TODO: Add resize functionality
             }
             
             function updatePlayhead() {
