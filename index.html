@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CapCut Stili Video Editör (Tam Çalışan)</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #121212;
+    color: #eee;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+  #leftPanel {
+    width: 300px;
+    background: #1e1e1e;
+    border-right: 1px solid #333;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #leftPanel h2 {
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+  }
+  label.file-upload {
+    background: #3a3a3a;
+    padding: 12px;
+    border-radius: 6px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    transition: background 0.2s ease;
+    display: block;
+    margin-bottom: 5px;
+  }
+  label.file-upload:hover {
+    background: #575757;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  #fileList {
+    flex: 1;
+    overflow-y: auto;
+    background: #222;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+  #fileList p, #fileList div.clip-item {
+    margin: 6px 0;
+    word-break: break-word;
+  }
+  .clip-item {
+    background: #333;
+    padding: 8px 12px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .clip-item.selected {
+    background: #3a86ff;
+  }
+  .clip-name {
+    flex: 1;
+    user-select: none;
+  }
+  .remove-btn {
+    background: transparent;
+    border: none;
+    color: #eee;
+    font-weight: 700;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 6px;
+  }
+  .remove-btn:hover {
+    color: #ff4c4c;
+  }
+  #audioName p {
+    margin: 0;
+    font-size: 0.9rem;
+    background: #222;
+    padding: 6px;
+    border-radius: 5px;
+  }
+
+  #centerPanel {
+    flex: 1;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 20px;
+  }
+  video#previewVideo {
+    max-width: 100%;
+    max-height: 70vh;
+    border-radius: 8px;
+    background: #000;
+    box-shadow: 0 0 15px rgba(58, 134, 255, 0.6);
+  }
+  #loadingOverlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: #eee;
+    display: none;
+    user-select: none;
+    border-radius: 8px;
+  }
+
+  #timeline {
+    margin-top: 15px;
+    width: 100%;
+    background: #222;
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 0.9rem;
+    color: #bbb;
+    user-select: none;
+  }
+  #timeline strong {
+    color: #eee;
+  }
+
+  #rightPanel {
+    width: 320px;
+    background: #1e1e1e;
+    border-left: 1px solid #333;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #rightPanel h3 {
+    font-weight: 600;
+    font-size: 1.3rem;
+    margin-bottom: 12px;
+  }
+  label {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    user-select: none;
+  }
+  input[type="number"], input[type="range"] {
+    width: 100%;
+    padding: 6px;
+    border-radius: 5px;
+    border: none;
+    background: #333;
+    color: #eee;
+  }
+  input[type="range"] {
+    cursor: pointer;
+  }
+  button#processBtn {
+    margin-top: auto;
+    background: #3a86ff;
+    border: none;
+    color: white;
+    padding: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button#processBtn:disabled {
+    background: #6a6a6a;
+    cursor: not-allowed;
+  }
+  button#processBtn:hover:not(:disabled) {
+    background: #265fcf;
+  }
+</style>
+</head>
+<body>
+
+<div id="leftPanel">
+  <h2>Medya Yükle</h2>
+  <label class="file-upload" for="videoFiles">Video Dosyaları Ekle</label>
+  <input type="file" id="videoFiles" accept="video/*" multiple />
+
+  <div id="fileList"><p>Henüz video seçilmedi.</p></div>
+
+  <label class="file-upload" for="audioFile">Arka Plan Müziği Ekle</label>
+  <input type="file" id="audioFile" accept="audio/*" />
+  <div id="audioName"><p>Müzik seçilmedi.</p></div>
+</div>
+
+<div id="centerPanel">
+  <video id="previewVideo" controls></video>
+  <div id="loadingOverlay">İşleniyor...</div>
+  <div id="timeline">Zaman Çizgisi: --</div>
+</div>
+
+<div id="rightPanel">
+  <h3>Düzenleme</h3>
+
+  <label for="trimStart">Başlangıç (sn):</label>
+  <input type="number" id="trimStart" min="0" step="0.1" value="0" />
+
+  <label for="trimEnd">Bitiş (sn):</label>
+  <input type="number" id="trimEnd" min="0" step="0.1" value="10" />
+
+  <label for="volume">Müzik Ses Seviyesi:</label>
+  <input type="range" id="volume" min="0" max="1" step="0.01" value="0.5" />
+
+  <button id="processBtn" disabled>Videoyu Düzenle ve Oluştur</button>
+</div>
+
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.8/dist/ffmpeg.min.js"></script>
+<script>
+  const { createFFmpeg, fetchFile } = FFmpeg;
+  const ffmpeg = createFFmpeg({ log: true });
+
+  const videoFilesInput = document.getElementById('videoFiles');
+  const audioFileInput = document.getElementById('audioFile');
+  const fileListDiv = document.getElementById('fileList');
+  const audioNameDiv = document.getElementById('audioName');
+  const previewVideo = document.getElementById('previewVideo');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const timeline = document.getElementById('timeline');
+  const trimStartInput = document.getElementById('trimStart');
+  const trimEndInput = document.getElementById('trimEnd');
+  const volumeInput = document.getElementById('volume');
+  const processBtn = document.getElementById('processBtn');
+
+  // Video kliplerini tutan dizi (dosyalar)
+  let videoFiles = [];
+  let audioFile = null;
+
+  // Seçili klip indeksi (timeline'da)
+  let selectedClipIndex = 0;
+
+  // Klipleri güncelle ve listele
+  function updateVideoListUI() {
+    if (videoFiles.length === 0) {
+      fileListDiv.innerHTML = '<p>Henüz video seçilmedi.</p>';
+      processBtn.disabled = true;
+      previewVideo.src = '';
+      timeline.textContent = 'Zaman Çizgisi: --';
+      return;
+    }
+    fileListDiv.innerHTML = '';
+    videoFiles.forEach((file, i) => {
+      const div = document.createElement('div');
+      div.className = 'clip-item' + (i === selectedClipIndex ? ' selected' : '');
+      div.title = 'Klibi Önizle / Düzenle';
+      // Tıklayınca seçili klip değişsin
+      div.onclick = () => {
+        selectedClipIndex = i;
+        loadClipMetadata(i);
+        updateVideoListUI();
+      };
+
+      const span = document.createElement('span');
+      span.className = 'clip-name';
+      span.textContent = file.name;
+      div.appendChild(span);
+
+      const removeBtn = document.createElement('button');
+      removeBtn.className = 'remove-btn';
+      removeBtn.textContent = '×';
+      removeBtn.title = 'Klibi Sil';
+      removeBtn.onclick = (e) => {
+        e.stopPropagation();
+        videoFiles.splice(i, 1);
+        if (selectedClipIndex >= videoFiles.length) selectedClipIndex = videoFiles.length - 1;
+        updateVideoListUI();
+        if (videoFiles.length > 0) loadClipMetadata(selectedClipIndex);
+        else {
+          previewVideo.src = '';
+          timeline.textContent = 'Zaman Çizgisi: --';
+        }
+      };
+      div.appendChild(removeBtn);
+
+      fileListDiv.appendChild(div);
+    });
+    processBtn.disabled = false;
+  }
+
+  // Seçili klibin metadata'sını (süre) oku, önizleme yap ve kırpma alanını ayarla
+  function loadClipMetadata(index) {
+    if (index < 0 || index >= videoFiles.length) return;
+    const file = videoFiles[index];
+    const url = URL.createObjectURL(file);
+    previewVideo.src = url;
+
+    // Videonun metadata'sını yükle
+    previewVideo.onloadedmetadata = () => {
+      timeline.textContent = `Zaman Çizgisi: 0s — ${previewVideo.duration.toFixed(2)}s`;
+      trimStartInput.value = 0;
+      trimEndInput.value = previewVideo.duration.toFixed(2);
+
+      trimStartInput.max = previewVideo.duration.toFixed(2);
+      trimEndInput.max = previewVideo.duration.toFixed(2);
+    };
+  }
+
+  // Müzik dosyası yüklendiğinde
+  audioFileInput.addEventListener('change', () => {
+    if (audioFileInput.files.length > 0) {
+      audioFile = audioFileInput.files[0];
+      audioNameDiv.innerHTML = `<p>${audioFile.name}</p>`;
+    } else {
+      audioFile = null;
+      audioNameDiv.innerHTML = `<p>Müzik seçilmedi.</p>`;
+    }
+  });
+
+  // Video dosyaları seçilince
+  videoFilesInput.addEventListener('change', () => {
+    if (videoFilesInput.files.length > 0) {
+      videoFiles = Array.from(videoFilesInput.files);
+      selectedClipIndex = 0;
+      updateVideoListUI();
+      loadClipMetadata(0);
+    }
+  });
+
+  // Trim inputları için validasyon ve güncelleme
+  trimStartInput.addEventListener('input', () => {
+    let start = parseFloat(trimStartInput.value);
+    let end = parseFloat(trimEndInput.value);
+    if (start < 0) start = 0;
+    if (start > end) start = end;
+    trimStartInput.value = start.toFixed(2);
+  });
+
+  trimEndInput.addEventListener('input', () => {
+    let start = parseFloat(trimStartInput.value);
+    let end = parseFloat(trimEndInput.value);
+    if (end < start) end = start;
+    if (end > parseFloat(trimEndInput.max)) end = parseFloat(trimEndInput.max);
+    trimEndInput.value = end.toFixed(2);
+  });
+
+  // ffmpeg yüklenirken overlay göster
+  async function showLoading(visible) {
+    loadingOverlay.style.display = visible ? 'flex' : 'none';
+  }
+
+  // Videoyu düzenle ve oluştur
+  processBtn.addEventListener('click', async () => {
+    if (videoFiles.length === 0) return alert('En az bir video dosyası ekleyin.');
+
+    processBtn.disabled = true;
+    await showLoading(true);
+
+    try {
+      if (!ffmpeg.isLoaded()) {
+        await ffmpeg.load();
+      }
+
+      // ffmpeg içini temizle
+      ffmpeg.FS('unlink', 'output.mp4').catch(() => {});
+      videoFiles.forEach((file, i) => {
+        try { ffmpeg.FS('unlink', `input${i}.mp4`); } catch {}
+      });
+      if (audioFile) {
+        try { ffmpeg.FS('unlink', 'audio.mp3'); } catch {}
+      }
+
+      // Videoları ffmpeg dosya sistemine yükle
+      for (let i = 0; i < videoFiles.length; i++) {
+        const fileData = await fetchFile(videoFiles[i]);
+        await ffmpeg.FS('writeFile', `input${i}.mp4`, fileData);
+      }
+
+      // Audio varsa yükle
+      if (audioFile) {
+        const audioData = await fetchFile(audioFile);
+        await ffmpeg.FS('writeFile', 'audio.mp3', audioData);
+      }
+
+      // Kırpma değerleri (saniye)
+      const start = parseFloat(trimStartInput.value);
+      const end = parseFloat(trimEndInput.value);
+
+      // Seçili klip üzerinde kırpma yapacağız. Sadece tek klip üzerinde düzenleme yapılacak (basitlik için).
+      // İstersen tümünü birleştirip sonra kırpma yapılabilir.
+
+      // Burada sadece seçili klip için işlem yapacağız
+      const inputName = `input${selectedClipIndex}.mp4`;
+      const outputName = 'trimmed.mp4';
+
+      // ffmpeg komutu: seçili klibi kırp
+      await ffmpeg.run(
+        '-i', inputName,
+        '-ss', `${start}`,
+        '-to', `${end}`,
+        '-c', 'copy',
+        outputName
+      );
+
+      // Eğer audio varsa, müziği ekle ve ses seviyesini ayarla
+      if (audioFile) {
+        // Müziği ses seviyesine göre ayarla ve videoya ekle
+        const volume = parseFloat(volumeInput.value);
+
+        // outputName dosyasını yeni video dosyasına katacağız
+        const finalOutput = 'final_output.mp4';
+
+        // Müziği ffmpeg'e ekle
+        // Video ve sesi karıştır, video sabit kalsın (copy), ses filtre ile volume ayarı yapalım
+        await ffmpeg.run(
+          '-i', outputName,
+          '-i', 'audio.mp3',
+          '-filter_complex', `[1:a]volume=${volume}[a1]`,
+          '-map', '0:v',
+          '-map', '[a1]',
+          '-c:v', 'copy',
+          '-shortest',
+          finalOutput
+        );
+
+        // finalOutput'u okuyup indirme linki oluştur
+        const data = ffmpeg.FS('readFile', finalOutput);
+        const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        previewVideo.src = url;
+      } else {
+        // Audio yoksa sadece kırpılmış videoyu göster
+        const data = ffmpeg.FS('readFile', outputName);
+        const url = URL.createObjectURL(new Blob([data.buffer], { type: 'video/mp4' }));
+        previewVideo.src = url;
+      }
+
+      alert('Video düzenleme tamamlandı. Önizlemeyi yukarıda izleyebilirsiniz.');
+
+    } catch (err) {
+      alert('Bir hata oluştu: ' + err.message);
+      console.error(err);
+    }
+
+    await showLoading(false);
+    processBtn.disabled = false;
+  });
+</script>
+
+</body>
+</html>
