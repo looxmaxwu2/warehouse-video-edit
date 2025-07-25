@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Birleştirme Aracı</title>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.11.6/dist/ffmpeg.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -58,6 +59,10 @@
         #downloadBtn:hover {
             background-color: #0b7dda;
         }
+        #progress {
+            margin-top: 10px;
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -73,15 +78,36 @@
     
     <button id="mergeBtn">Videoları Birleştir</button>
     <a id="downloadBtn" download="birlesik_video.mp4">Birleşik Videoyu İndir</a>
+    <div id="progress">İşlem devam ediyor: <span id="progressText">%0</span></div>
     
     <script>
+        const { createFFmpeg, fetchFile } = FFmpeg;
+        const ffmpeg = createFFmpeg({ 
+            log: true,
+            progress: ({ ratio }) => {
+                const percent = Math.round(ratio * 100);
+                document.getElementById('progressText').textContent = `%${percent}`;
+            }
+        });
+        
         const fileInput = document.getElementById('fileInput');
         const dropArea = document.getElementById('dropArea');
         const videoList = document.getElementById('videoList');
         const mergeBtn = document.getElementById('mergeBtn');
         const downloadBtn = document.getElementById('downloadBtn');
+        const progress = document.getElementById('progress');
         
         let videoFiles = [];
+        
+        // FFmpeg yükleme
+        async function loadFFmpeg() {
+            if (!ffmpeg.isLoaded()) {
+                await ffmpeg.load();
+            }
+        }
+        
+        // Sayfa yüklendiğinde FFmpeg'i yükle
+        loadFFmpeg().catch(console.error);
         
         // Dosya seçme işlemi
         fileInput.addEventListener('change', (e) => {
@@ -164,15 +190,31 @@
             
             mergeBtn.disabled = true;
             mergeBtn.textContent = 'Birleştiriliyor...';
+            progress.style.display = 'block';
             
             try {
-                // Burada gerçek bir birleştirme işlemi yapılabilir
-                // Bu örnekte sadece simüle ediyoruz
-                await simulateMerge();
+                // FFmpeg'e dosyaları yükle
+                for (let i = 0; i < videoFiles.length; i++) {
+                    const file = videoFiles[i];
+                    const data = await fetchFile(file);
+                    ffmpeg.FS('writeFile', `input${i}.mp4`, data);
+                }
                 
-                // Birleştirilmiş video URL'si oluşturma (gerçekte FFmpeg gibi araçlar kullanılır)
-                const mergedBlob = new Blob(videoFiles, { type: 'video/mp4' });
-                const mergedUrl = URL.createObjectURL(mergedBlob);
+                // Birleştirme komutunu çalıştır
+                await ffmpeg.run(
+                    '-i', 'input0.mp4',
+                    '-i', 'input1.mp4',
+                    '-filter_complex', '[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]',
+                    '-map', '[outv]',
+                    '-map', '[outa]',
+                    'output.mp4'
+                );
+                
+                // Sonucu al
+                const data = ffmpeg.FS('readFile', 'output.mp4');
+                const mergedUrl = URL.createObjectURL(
+                    new Blob([data.buffer], { type: 'video/mp4' })
+                );
                 
                 downloadBtn.href = mergedUrl;
                 downloadBtn.style.display = 'inline-block';
@@ -180,19 +222,23 @@
                 alert('Videolar başarıyla birleştirildi! İndir butonuna tıklayarak indirebilirsiniz.');
             } catch (error) {
                 console.error('Birleştirme hatası:', error);
-                alert('Videolar birleştirilirken bir hata oluştu!');
+                alert('Videolar birleştirilirken bir hata oluştu: ' + error.message);
             } finally {
                 mergeBtn.disabled = false;
                 mergeBtn.textContent = 'Videoları Birleştir';
+                progress.style.display = 'none';
+                
+                // Geçici dosyaları temizle
+                for (let i = 0; i < videoFiles.length; i++) {
+                    try {
+                        ffmpeg.FS('unlink', `input${i}.mp4`);
+                    } catch (e) {}
+                }
+                try {
+                    ffmpeg.FS('unlink', 'output.mp4');
+                } catch (e) {}
             }
         });
-        
-        // Birleştirme işlemini simüle etme
-        function simulateMerge() {
-            return new Promise((resolve) => {
-                setTimeout(resolve, 2000); // 2 saniye bekleme
-            });
-        }
         
         // Sayfa yüklendiğinde video listesini güncelle
         updateVideoList();
