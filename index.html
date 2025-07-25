@@ -1,190 +1,54 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Birleştirme Aracı</title>
-    <style>
-        /* Önceki stil kodları aynı kalıyor */
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
-        h1 { color: #333; text-align: center; }
-        .upload-area { border: 2px dashed #ccc; padding: 30px; text-align: center; margin-bottom: 20px; background-color: white; border-radius: 5px; }
-        .video-list { margin-bottom: 20px; }
-        .video-item { display: flex; align-items: center; margin-bottom: 10px; padding: 10px; background-color: white; border-radius: 5px; }
-        .video-item video { width: 100px; margin-right: 10px; }
-        button { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
-        button:disabled { background-color: #cccccc; cursor: not-allowed; }
-        button:hover { background-color: #45a049; }
-        #downloadBtn { display: none; background-color: #2196F3; }
-        #downloadBtn:hover { background-color: #0b7dda; }
-        #progress { margin-top: 10px; display: none; }
-        #mergedVideo { width: 100%; margin-top: 20px; display: none; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GitHub Pages Site</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
 </head>
 <body>
-    <h1>Video Birleştirme Aracı</h1>
-    
-    <div class="upload-area" id="dropArea">
-        <p>Video dosyalarınızı buraya sürükleyip bırakın veya</p>
-        <input type="file" id="fileInput" accept="video/mp4" multiple>
-        <p>Sadece MP4 formatı desteklenmektedir (H.264 codec)</p>
-    </div>
-    
-    <div class="video-list" id="videoList"></div>
-    
-    <button id="mergeBtn" disabled>Videoları Birleştir</button>
-    <a id="downloadBtn" download="birlesik_video.mp4">Birleşik Videoyu İndir</a>
-    <div id="progress">İşlem devam ediyor...</div>
-    
-    <video id="mergedVideo" controls></video>
+  <div class="container">
+    <h1>GitHub Pages'e Hoş Geldiniz! 🎯</h1>
+    <p>Bu site GitHub Pages üzerinde çalışıyor.</p>
+    <button id="myButton">Tıkla!</button>
+    <p id="demo"></p>
+  </div>
 
-    <script>
-        const fileInput = document.getElementById('fileInput');
-        const dropArea = document.getElementById('dropArea');
-        const videoList = document.getElementById('videoList');
-        const mergeBtn = document.getElementById('mergeBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const progress = document.getElementById('progress');
-        const mergedVideo = document.getElementById('mergedVideo');
-        
-        let videoFiles = [];
-
-        // MediaSource ile video birleştirme
-        async function mergeVideos() {
-            if (!window.MediaSource) {
-                throw new Error('Tarayıcınız MediaSource API desteklemiyor');
-            }
-
-            const mediaSource = new MediaSource();
-            mergedVideo.src = URL.createObjectURL(mediaSource);
-            
-            return new Promise((resolve) => {
-                mediaSource.addEventListener('sourceopen', async () => {
-                    const sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
-                    
-                    // İlk video segmentini ekle
-                    const firstVideo = videoFiles[0];
-                    const firstBuffer = await fetch(URL.createObjectURL(firstVideo)).then(res => res.arrayBuffer());
-                    sourceBuffer.appendBuffer(firstBuffer);
-                    
-                    // Diğer videoları sırayla ekle
-                    for (let i = 1; i < videoFiles.length; i++) {
-                        await new Promise((resolveSegment) => {
-                            sourceBuffer.addEventListener('updateend', () => {
-                                if (i < videoFiles.length - 1) {
-                                    sourceBuffer.removeEventListener('updateend', arguments.callee);
-                                }
-                                resolveSegment();
-                            }, { once: true });
-                            
-                            const video = videoFiles[i];
-                            fetch(URL.createObjectURL(video))
-                                .then(res => res.arrayBuffer())
-                                .then(buffer => sourceBuffer.appendBuffer(buffer));
-                        });
-                    }
-                    
-                    // Tüm videolar eklendi
-                    mediaSource.addEventListener('sourceended', () => {
-                        // Birleştirilmiş videoyu indirme için hazırla
-                        const chunks = videoFiles.map(file => file);
-                        const concatenatedBlob = new Blob(chunks, { type: 'video/mp4' });
-                        const concatenatedUrl = URL.createObjectURL(concatenatedBlob);
-                        downloadBtn.href = concatenatedUrl;
-                        resolve();
-                    });
-                    
-                    mediaSource.endOfStream();
-                });
-            });
-        }
-
-        // Dosya işleme ve arayüz fonksiyonları (önceden olduğu gibi)
-        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
-        
-        dropArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            dropArea.style.borderColor = '#4CAF50';
-        });
-        
-        dropArea.addEventListener('dragleave', () => {
-            dropArea.style.borderColor = '#ccc';
-        });
-        
-        dropArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            dropArea.style.borderColor = '#ccc';
-            handleFiles(e.dataTransfer.files);
-        });
-
-        function handleFiles(files) {
-            for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                if (file.type === 'video/mp4') {
-                    videoFiles.push(file);
-                }
-            }
-            updateVideoList();
-        }
-
-        function updateVideoList() {
-            videoList.innerHTML = '';
-            
-            if (videoFiles.length === 0) {
-                videoList.innerHTML = '<p>Henüz video eklenmedi</p>';
-                mergeBtn.disabled = true;
-                return;
-            }
-            
-            mergeBtn.disabled = videoFiles.length < 2;
-            
-            videoFiles.forEach((file, index) => {
-                const videoItem = document.createElement('div');
-                videoItem.className = 'video-item';
-                
-                const videoElement = document.createElement('video');
-                videoElement.src = URL.createObjectURL(file);
-                videoElement.controls = true;
-                
-                const infoDiv = document.createElement('div');
-                infoDiv.innerHTML = `<p><strong>${file.name}</strong><br>${(file.size/(1024*1024)).toFixed(2)} MB</p>`;
-                
-                const removeBtn = document.createElement('button');
-                removeBtn.textContent = 'Kaldır';
-                removeBtn.onclick = () => {
-                    videoFiles.splice(index, 1);
-                    updateVideoList();
-                };
-                
-                videoItem.append(videoElement, infoDiv, removeBtn);
-                videoList.appendChild(videoItem);
-            });
-        }
-
-        mergeBtn.addEventListener('click', async () => {
-            if (videoFiles.length < 2) {
-                alert('En az 2 video seçmelisiniz!');
-                return;
-            }
-            
-            mergeBtn.disabled = true;
-            progress.style.display = 'block';
-            
-            try {
-                await mergeVideos();
-                mergedVideo.style.display = 'block';
-                downloadBtn.style.display = 'inline-block';
-                alert('Videolar başarıyla birleştirildi!');
-            } catch (error) {
-                console.error('Hata:', error);
-                alert('Birleştirme başarısız: ' + error.message);
-            } finally {
-                mergeBtn.disabled = false;
-                progress.style.display = 'none';
-            }
-        });
-
-        updateVideoList();
-    </script>
+  <script>
+    document.getElementById("myButton").addEventListener("click", function() {
+      document.getElementById("demo").innerHTML = "Butona tıklandı! 🚀";
+    });
+  </script>
 </body>
 </html>
