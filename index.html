@@ -5,72 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Video Birleştirme Aracı</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-        }
-        .upload-area {
-            border: 2px dashed #ccc;
-            padding: 30px;
-            text-align: center;
-            margin-bottom: 20px;
-            background-color: white;
-            border-radius: 5px;
-        }
-        .video-list {
-            margin-bottom: 20px;
-        }
-        .video-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: white;
-            border-radius: 5px;
-        }
-        .video-item video {
-            width: 100px;
-            margin-right: 10px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #downloadBtn {
-            display: none;
-            background-color: #2196F3;
-        }
-        #downloadBtn:hover {
-            background-color: #0b7dda;
-        }
-        #progress {
-            margin-top: 10px;
-            display: none;
-        }
-        #mergedVideo {
-            width: 100%;
-            margin-top: 20px;
-            display: none;
-        }
+        /* Önceki stil kodları aynı kalıyor */
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f5f5f5; }
+        h1 { color: #333; text-align: center; }
+        .upload-area { border: 2px dashed #ccc; padding: 30px; text-align: center; margin-bottom: 20px; background-color: white; border-radius: 5px; }
+        .video-list { margin-bottom: 20px; }
+        .video-item { display: flex; align-items: center; margin-bottom: 10px; padding: 10px; background-color: white; border-radius: 5px; }
+        .video-item video { width: 100px; margin-right: 10px; }
+        button { background-color: #4CAF50; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        button:hover { background-color: #45a049; }
+        #downloadBtn { display: none; background-color: #2196F3; }
+        #downloadBtn:hover { background-color: #0b7dda; }
+        #progress { margin-top: 10px; display: none; }
+        #mergedVideo { width: 100%; margin-top: 20px; display: none; }
     </style>
 </head>
 <body>
@@ -78,7 +26,7 @@
     
     <div class="upload-area" id="dropArea">
         <p>Video dosyalarınızı buraya sürükleyip bırakın veya</p>
-        <input type="file" id="fileInput" accept="video/*" multiple>
+        <input type="file" id="fileInput" accept="video/mp4" multiple>
         <p>Sadece MP4 formatı desteklenmektedir (H.264 codec)</p>
     </div>
     
@@ -89,7 +37,7 @@
     <div id="progress">İşlem devam ediyor...</div>
     
     <video id="mergedVideo" controls></video>
-    
+
     <script>
         const fileInput = document.getElementById('fileInput');
         const dropArea = document.getElementById('dropArea');
@@ -100,13 +48,60 @@
         const mergedVideo = document.getElementById('mergedVideo');
         
         let videoFiles = [];
+
+        // MediaSource ile video birleştirme
+        async function mergeVideos() {
+            if (!window.MediaSource) {
+                throw new Error('Tarayıcınız MediaSource API desteklemiyor');
+            }
+
+            const mediaSource = new MediaSource();
+            mergedVideo.src = URL.createObjectURL(mediaSource);
+            
+            return new Promise((resolve) => {
+                mediaSource.addEventListener('sourceopen', async () => {
+                    const sourceBuffer = mediaSource.addSourceBuffer('video/mp4; codecs="avc1.42E01E, mp4a.40.2"');
+                    
+                    // İlk video segmentini ekle
+                    const firstVideo = videoFiles[0];
+                    const firstBuffer = await fetch(URL.createObjectURL(firstVideo)).then(res => res.arrayBuffer());
+                    sourceBuffer.appendBuffer(firstBuffer);
+                    
+                    // Diğer videoları sırayla ekle
+                    for (let i = 1; i < videoFiles.length; i++) {
+                        await new Promise((resolveSegment) => {
+                            sourceBuffer.addEventListener('updateend', () => {
+                                if (i < videoFiles.length - 1) {
+                                    sourceBuffer.removeEventListener('updateend', arguments.callee);
+                                }
+                                resolveSegment();
+                            }, { once: true });
+                            
+                            const video = videoFiles[i];
+                            fetch(URL.createObjectURL(video))
+                                .then(res => res.arrayBuffer())
+                                .then(buffer => sourceBuffer.appendBuffer(buffer));
+                        });
+                    }
+                    
+                    // Tüm videolar eklendi
+                    mediaSource.addEventListener('sourceended', () => {
+                        // Birleştirilmiş videoyu indirme için hazırla
+                        const chunks = videoFiles.map(file => file);
+                        const concatenatedBlob = new Blob(chunks, { type: 'video/mp4' });
+                        const concatenatedUrl = URL.createObjectURL(concatenatedBlob);
+                        downloadBtn.href = concatenatedUrl;
+                        resolve();
+                    });
+                    
+                    mediaSource.endOfStream();
+                });
+            });
+        }
+
+        // Dosya işleme ve arayüz fonksiyonları (önceden olduğu gibi)
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
         
-        // Dosya seçme işlemi
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
-        
-        // Sürükle bırak işlemi
         dropArea.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropArea.style.borderColor = '#4CAF50';
@@ -121,19 +116,17 @@
             dropArea.style.borderColor = '#ccc';
             handleFiles(e.dataTransfer.files);
         });
-        
-        // Dosyaları işleme fonksiyonu
+
         function handleFiles(files) {
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                if (file.type.startsWith('video/')) {
+                if (file.type === 'video/mp4') {
                     videoFiles.push(file);
                 }
             }
             updateVideoList();
         }
-        
-        // Video listesini güncelleme
+
         function updateVideoList() {
             videoList.innerHTML = '';
             
@@ -154,10 +147,7 @@
                 videoElement.controls = true;
                 
                 const infoDiv = document.createElement('div');
-                infoDiv.innerHTML = `
-                    <p><strong>${file.name}</strong></p>
-                    <p>${(file.size / (1024 * 1024)).toFixed(2)} MB</p>
-                `;
+                infoDiv.innerHTML = `<p><strong>${file.name}</strong><br>${(file.size/(1024*1024)).toFixed(2)} MB</p>`;
                 
                 const removeBtn = document.createElement('button');
                 removeBtn.textContent = 'Kaldır';
@@ -166,14 +156,11 @@
                     updateVideoList();
                 };
                 
-                videoItem.appendChild(videoElement);
-                videoItem.appendChild(infoDiv);
-                videoItem.appendChild(removeBtn);
+                videoItem.append(videoElement, infoDiv, removeBtn);
                 videoList.appendChild(videoItem);
             });
         }
-        
-        // Videoları birleştirme işlemi
+
         mergeBtn.addEventListener('click', async () => {
             if (videoFiles.length < 2) {
                 alert('En az 2 video seçmelisiniz!');
@@ -181,39 +168,22 @@
             }
             
             mergeBtn.disabled = true;
-            mergeBtn.textContent = 'Birleştiriliyor...';
             progress.style.display = 'block';
             
             try {
-                // Tüm videoları tek bir blob'ta birleştir
-                const blobs = await Promise.all(videoFiles.map(file => 
-                    fetch(URL.createObjectURL(file)).then(res => res.blob())
-                ));
-                
-                // Blob'ları birleştir
-                const concatenatedBlob = new Blob(blobs, { type: 'video/mp4' });
-                const concatenatedUrl = URL.createObjectURL(concatenatedBlob);
-                
-                // Birleştirilmiş videoyu göster
-                mergedVideo.src = concatenatedUrl;
+                await mergeVideos();
                 mergedVideo.style.display = 'block';
-                
-                // İndirme linkini ayarla
-                downloadBtn.href = concatenatedUrl;
                 downloadBtn.style.display = 'inline-block';
-                
-                alert('Videolar başarıyla birleştirildi! İndir butonuna tıklayarak indirebilirsiniz.');
+                alert('Videolar başarıyla birleştirildi!');
             } catch (error) {
-                console.error('Birleştirme hatası:', error);
-                alert('Videolar birleştirilirken bir hata oluştu: ' + error.message);
+                console.error('Hata:', error);
+                alert('Birleştirme başarısız: ' + error.message);
             } finally {
                 mergeBtn.disabled = false;
-                mergeBtn.textContent = 'Videoları Birleştir';
                 progress.style.display = 'none';
             }
         });
-        
-        // Sayfa yüklendiğinde video listesini güncelle
+
         updateVideoList();
     </script>
 </body>
