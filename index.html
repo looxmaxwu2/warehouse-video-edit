@@ -3,51 +3,134 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub Pages Site</title>
+  <title>Online Video Birleştirici</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      text-align: center;
-      background-color: #f0f8ff;
+      background-color: #f5f5f5;
       margin: 0;
       padding: 20px;
-    }
-    h1 {
-      color: #2c3e50;
     }
     .container {
       max-width: 800px;
       margin: 0 auto;
+      background: white;
       padding: 20px;
-      background-color: white;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    button {
-      background-color: #3498db;
+    h1 {
+      color: #ff4757;
+      text-align: center;
+    }
+    #video-container {
+      margin: 20px 0;
+    }
+    #preview {
+      width: 100%;
+      background: #000;
+      border-radius: 5px;
+    }
+    #file-input {
+      display: none;
+    }
+    .upload-btn {
+      background: #3498db;
       color: white;
-      border: none;
       padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .merge-btn {
+      background: #2ecc71;
+      color: white;
+      padding: 10px 20px;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
     }
-    button:hover {
-      background-color: #2980b9;
+    .video-list {
+      margin: 20px 0;
+      border: 1px dashed #ccc;
+      padding: 10px;
+      min-height: 100px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>GitHub Pages'e Hoş Geldiniz! 🎯</h1>
-    <p>Bu site GitHub Pages üzerinde çalışıyor.</p>
-    <button id="myButton">Tıkla!</button>
-    <p id="demo"></p>
+    <h1>Online Video Birleştirici</h1>
+    <p>Birden fazla videoyu yükleyip tek bir video olarak birleştirin.</p>
+    
+    <button class="upload-btn" onclick="document.getElementById('file-input').click()">Videoları Seç</button>
+    <input type="file" id="file-input" accept="video/*" multiple>
+    
+    <div class="video-list" id="video-list">
+      <p>Henüz video eklenmedi.</p>
+    </div>
+    
+    <button class="merge-btn" id="merge-btn">Videoları Birleştir</button>
+    
+    <div id="video-container">
+      <video id="preview" controls></video>
+    </div>
   </div>
 
   <script>
-    document.getElementById("myButton").addEventListener("click", function() {
-      document.getElementById("demo").innerHTML = "Butona tıklandı! 🚀";
+    const fileInput = document.getElementById('file-input');
+    const videoList = document.getElementById('video-list');
+    const mergeBtn = document.getElementById('merge-btn');
+    const preview = document.getElementById('preview');
+    let videos = [];
+
+    // Video seçildiğinde
+    fileInput.addEventListener('change', function(e) {
+      videos = Array.from(e.target.files);
+      updateVideoList();
+    });
+
+    // Video listesini güncelle
+    function updateVideoList() {
+      if (videos.length === 0) {
+        videoList.innerHTML = '<p>Henüz video eklenmedi.</p>';
+        return;
+      }
+      
+      videoList.innerHTML = '';
+      videos.forEach((video, index) => {
+        const videoItem = document.createElement('div');
+        videoItem.innerHTML = `
+          <p>${index + 1}. ${video.name} (${formatFileSize(video.size)})</p>
+        `;
+        videoList.appendChild(videoItem);
+      });
+    }
+
+    // Dosya boyutunu formatla (MB/KB)
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
+      else return (bytes / 1048576).toFixed(2) + ' MB';
+    }
+
+    // Birleştirme butonu (simüle edildi)
+    mergeBtn.addEventListener('click', function() {
+      if (videos.length === 0) {
+        alert('Lütfen en az bir video seçin!');
+        return;
+      }
+      
+      alert('Video birleştirme işlemi başlatıldı! (Bu örnekte gerçek birleştirme yapılmaz)');
+      
+      // Örnek: İlk videoyu oynat
+      if (videos.length > 0) {
+        const videoUrl = URL.createObjectURL(videos[0]);
+        preview.src = videoUrl;
+      }
     });
   </script>
 </body>
