@@ -3,356 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video Editor</title>
+    <title>Video Birleştirme Aracı</title>
     <style>
-        :root {
-            --primary: #fe2c55;
-            --dark-bg: #0f0f0f;
-            --panel-bg: #161823;
-            --text-light: #ffffff;
-            --text-gray: #aaaaaa;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        
         body {
-            background-color: var(--dark-bg);
-            color: var(--text-light);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
         }
-        
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: rgba(0, 0, 0, 0.5);
-            border-bottom: 1px solid #333;
+        h1 {
+            color: #333;
+            text-align: center;
         }
-        
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: var(--primary);
-        }
-        
-        .btn {
-            padding: 8px 16px;
-            border-radius: 4px;
-            border: none;
-            cursor: pointer;
-            font-weight: 500;
-            background-color: var(--primary);
-            color: white;
-        }
-        
-        .main-container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        .sidebar {
-            width: 280px;
-            background-color: var(--panel-bg);
-            padding: 15px;
-            overflow-y: auto;
-            border-right: 1px solid #333;
-        }
-        
-        .media-library {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .media-item {
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 6px;
-            overflow: hidden;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
-        
-        .media-item:hover {
-            transform: scale(1.02);
-        }
-        
-        .media-thumbnail {
-            width: 100%;
-            height: 80px;
-            background-color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-gray);
-            font-size: 12px;
-        }
-        
-        .media-label {
-            padding: 8px;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .editor-area {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .preview-container {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: #000;
-            position: relative;
-        }
-        
-        #preview-video {
-            max-width: 100%;
-            max-height: 100%;
-        }
-        
-        .timeline-container {
-            height: 200px;
-            background-color: var(--panel-bg);
-            border-top: 1px solid #333;
-            padding: 10px;
-            overflow-x: auto;
-        }
-        
-        .timeline {
-            height: 100%;
-            min-width: 100%;
-            position: relative;
-            background-color: rgba(255, 255, 255, 0.03);
-        }
-        
-        .track {
-            height: 60px;
-            margin-bottom: 10px;
-            background-color: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            position: relative;
-        }
-        
-        .video-clip {
-            position: absolute;
-            height: 100%;
-            background-color: var(--primary);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 12px;
-        }
-        
-        .audio-clip {
-            position: absolute;
-            height: 100%;
-            background-color: #25f4ee;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: black;
-            font-size: 12px;
-        }
-        
-        .playhead {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 2px;
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
             background-color: white;
-            z-index: 10;
+            border-radius: 5px;
         }
-        
-        .tools-panel {
+        .video-list {
+            margin-bottom: 20px;
+        }
+        .video-item {
             display: flex;
+            align-items: center;
+            margin-bottom: 10px;
             padding: 10px;
-            background-color: var(--panel-bg);
-            border-top: 1px solid #333;
-            gap: 10px;
-            overflow-x: auto;
+            background-color: white;
+            border-radius: 5px;
         }
-        
-        .tool-btn {
-            background: rgba(255, 255, 255, 0.1);
+        .video-item video {
+            width: 100px;
+            margin-right: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
             border: none;
-            color: var(--text-light);
-            padding: 8px 12px;
-            border-radius: 4px;
+            padding: 10px 15px;
+            border-radius: 5px;
             cursor: pointer;
-            min-width: 60px;
-            font-size: 12px;
+            font-size: 16px;
         }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+        button:hover {
+            background-color: #45a049;
         }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 4px;
+        #downloadBtn {
+            display: none;
+            background-color: #2196F3;
+        }
+        #downloadBtn:hover {
+            background-color: #0b7dda;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">Video Editor</div>
-        <button class="btn" id="export-btn">Dışa Aktar</button>
-    </header>
+    <h1>Video Birleştirme Aracı</h1>
     
-    <div class="main-container">
-        <div class="sidebar">
-            <div class="media-library">
-                <div class="media-item" data-type="video" data-src="https://samplelib.com/lib/preview/mp4/sample-5s.mp4">
-                    <div class="media-thumbnail">Video 1</div>
-                    <div class="media-label">Örnek Video</div>
-                </div>
-                <div class="media-item" data-type="audio" data-src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3">
-                    <div class="media-thumbnail">Müzik</div>
-                    <div class="media-label">Örnek Müzik</div>
-                </div>
-                <div class="media-item" id="upload-btn">
-                    <div class="media-thumbnail">+ Yükle</div>
-                    <div class="media-label">Kendi Dosyan</div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="editor-area">
-            <div class="preview-container">
-                <video id="preview-video" controls></video>
-            </div>
-            
-            <div class="timeline-container">
-                <div class="timeline" id="timeline">
-                    <div class="playhead" id="playhead"></div>
-                    <div class="track" id="video-track"></div>
-                    <div class="track" id="audio-track"></div>
-                </div>
-            </div>
-            
-            <div class="tools-panel">
-                <button class="tool-btn" id="cut-btn">Kes</button>
-                <button class="tool-btn" id="split-btn">Ayır</button>
-                <button class="tool-btn" id="volume-btn">Ses</button>
-                <button class="tool-btn" id="text-btn">Metin</button>
-            </div>
-        </div>
+    <div class="upload-area" id="dropArea">
+        <p>Video dosyalarınızı buraya sürükleyip bırakın veya</p>
+        <input type="file" id="fileInput" accept="video/*" multiple>
+        <p>MP4, MOV, AVI formatları desteklenmektedir</p>
     </div>
-
+    
+    <div class="video-list" id="videoList"></div>
+    
+    <button id="mergeBtn">Videoları Birleştir</button>
+    <a id="downloadBtn" download="birlesik_video.mp4">Birleşik Videoyu İndir</a>
+    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Elements
-            const previewVideo = document.getElementById('preview-video');
-            const exportBtn = document.getElementById('export-btn');
-            const videoTrack = document.getElementById('video-track');
-            const audioTrack = document.getElementById('audio-track');
-            const mediaItems = document.querySelectorAll('.media-item[data-type]');
-            const uploadBtn = document.getElementById('upload-btn');
-            
-            // State
-            let clips = [];
-            let audioClips = [];
-            
-            // Event listeners
-            mediaItems.forEach(item => {
-                item.addEventListener('click', () => {
-                    const type = item.getAttribute('data-type');
-                    const src = item.getAttribute('data-src');
-                    
-                    if (type === 'video') {
-                        addVideoClip(src);
-                        if (!previewVideo.src) {
-                            previewVideo.src = src;
-                        }
-                    } else if (type === 'audio') {
-                        addAudioClip(src);
-                    }
-                });
-            });
-            
-            uploadBtn.addEventListener('click', () => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'video/*,audio/*';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const url = URL.createObjectURL(file);
-                        if (file.type.startsWith('video/')) {
-                            addVideoClip(url);
-                            previewVideo.src = url;
-                        } else if (file.type.startsWith('audio/')) {
-                            addAudioClip(url);
-                        }
-                    }
-                };
-                input.click();
-            });
-            
-            exportBtn.addEventListener('click', () => {
-                if (clips.length === 0) {
-                    alert('Lütfen önce video ekleyin!');
-                    return;
+        const fileInput = document.getElementById('fileInput');
+        const dropArea = document.getElementById('dropArea');
+        const videoList = document.getElementById('videoList');
+        const mergeBtn = document.getElementById('mergeBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        
+        let videoFiles = [];
+        
+        // Dosya seçme işlemi
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        // Sürükle bırak işlemi
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#4CAF50';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = '#ccc';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = '#ccc';
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        // Dosyaları işleme fonksiyonu
+        function handleFiles(files) {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                if (file.type.startsWith('video/')) {
+                    videoFiles.push(file);
                 }
-                
-                // Simulate export
-                const progress = document.createElement('div');
-                progress.style.position = 'fixed';
-                progress.style.bottom = '20px';
-                progress.style.right = '20px';
-                progress.style.backgroundColor = 'var(--panel-bg)';
-                progress.style.padding = '15px';
-                progress.style.borderRadius = '8px';
-                progress.style.boxShadow = '0 0 10px rgba(0,0,0,0.5)';
-                progress.innerHTML = '<p>Video dışa aktarıldı! (Simülasyon)</p>';
-                document.body.appendChild(progress);
-                
-                setTimeout(() => {
-                    progress.remove();
-                }, 3000);
-            });
+            }
+            updateVideoList();
+        }
+        
+        // Video listesini güncelleme
+        function updateVideoList() {
+            videoList.innerHTML = '';
             
-            // Functions
-            function addVideoClip(src) {
-                const clip = document.createElement('div');
-                clip.className = 'video-clip';
-                clip.style.width = '200px';
-                clip.style.left = `${clips.length * 210}px`;
-                clip.textContent = 'Video Klibi';
-                videoTrack.appendChild(clip);
-                clips.push(clip);
+            if (videoFiles.length === 0) {
+                videoList.innerHTML = '<p>Henüz video eklenmedi</p>';
+                mergeBtn.style.display = 'none';
+                return;
             }
             
-            function addAudioClip(src) {
-                const clip = document.createElement('div');
-                clip.className = 'audio-clip';
-                clip.style.width = '200px';
-                clip.style.left = `${audioClips.length * 210}px`;
-                clip.textContent = 'Müzik';
-                audioTrack.appendChild(clip);
-                audioClips.push(clip);
+            mergeBtn.style.display = 'inline-block';
+            
+            videoFiles.forEach((file, index) => {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+                
+                const videoElement = document.createElement('video');
+                videoElement.src = URL.createObjectURL(file);
+                videoElement.controls = true;
+                
+                const infoDiv = document.createElement('div');
+                infoDiv.innerHTML = `
+                    <p><strong>${file.name}</strong></p>
+                    <p>${(file.size / (1024 * 1024)).toFixed(2)} MB</p>
+                `;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.textContent = 'Kaldır';
+                removeBtn.onclick = () => {
+                    videoFiles.splice(index, 1);
+                    updateVideoList();
+                };
+                
+                videoItem.appendChild(videoElement);
+                videoItem.appendChild(infoDiv);
+                videoItem.appendChild(removeBtn);
+                videoList.appendChild(videoItem);
+            });
+        }
+        
+        // Videoları birleştirme işlemi
+        mergeBtn.addEventListener('click', async () => {
+            if (videoFiles.length < 2) {
+                alert('En az 2 video seçmelisiniz!');
+                return;
+            }
+            
+            mergeBtn.disabled = true;
+            mergeBtn.textContent = 'Birleştiriliyor...';
+            
+            try {
+                // Burada gerçek bir birleştirme işlemi yapılabilir
+                // Bu örnekte sadece simüle ediyoruz
+                await simulateMerge();
+                
+                // Birleştirilmiş video URL'si oluşturma (gerçekte FFmpeg gibi araçlar kullanılır)
+                const mergedBlob = new Blob(videoFiles, { type: 'video/mp4' });
+                const mergedUrl = URL.createObjectURL(mergedBlob);
+                
+                downloadBtn.href = mergedUrl;
+                downloadBtn.style.display = 'inline-block';
+                
+                alert('Videolar başarıyla birleştirildi! İndir butonuna tıklayarak indirebilirsiniz.');
+            } catch (error) {
+                console.error('Birleştirme hatası:', error);
+                alert('Videolar birleştirilirken bir hata oluştu!');
+            } finally {
+                mergeBtn.disabled = false;
+                mergeBtn.textContent = 'Videoları Birleştir';
             }
         });
+        
+        // Birleştirme işlemini simüle etme
+        function simulateMerge() {
+            return new Promise((resolve) => {
+                setTimeout(resolve, 2000); // 2 saniye bekleme
+            });
+        }
+        
+        // Sayfa yüklendiğinde video listesini güncelle
+        updateVideoList();
     </script>
 </body>
 </html>
