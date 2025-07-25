@@ -49,6 +49,10 @@
             cursor: pointer;
             font-size: 16px;
         }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
         button:hover {
             background-color: #45a049;
         }
@@ -63,12 +67,19 @@
             margin-top: 10px;
             display: none;
         }
+        #loadingMessage {
+            color: #4CAF50;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Video Birleştirme Aracı</h1>
+    <div id="loadingMessage">FFmpeg yükleniyor, lütfen bekleyin...</div>
     
-    <div class="upload-area" id="dropArea">
+    <div class="upload-area" id="dropArea" style="display:none;">
         <p>Video dosyalarınızı buraya sürükleyip bırakın veya</p>
         <input type="file" id="fileInput" accept="video/*" multiple>
         <p>MP4, MOV, AVI formatları desteklenmektedir</p>
@@ -76,7 +87,7 @@
     
     <div class="video-list" id="videoList"></div>
     
-    <button id="mergeBtn">Videoları Birleştir</button>
+    <button id="mergeBtn" disabled>Videoları Birleştir</button>
     <a id="downloadBtn" download="birlesik_video.mp4">Birleşik Videoyu İndir</a>
     <div id="progress">İşlem devam ediyor: <span id="progressText">%0</span></div>
     
@@ -96,18 +107,30 @@
         const mergeBtn = document.getElementById('mergeBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const progress = document.getElementById('progress');
+        const loadingMessage = document.getElementById('loadingMessage');
         
         let videoFiles = [];
+        let isFFmpegLoaded = false;
         
         // FFmpeg yükleme
         async function loadFFmpeg() {
-            if (!ffmpeg.isLoaded()) {
-                await ffmpeg.load();
+            try {
+                if (!ffmpeg.isLoaded()) {
+                    await ffmpeg.load();
+                }
+                isFFmpegLoaded = true;
+                loadingMessage.style.display = 'none';
+                dropArea.style.display = 'block';
+                mergeBtn.disabled = false;
+                console.log('FFmpeg yüklendi');
+            } catch (error) {
+                console.error('FFmpeg yükleme hatası:', error);
+                loadingMessage.textContent = 'FFmpeg yüklenirken hata oluştu. Lütfen sayfayı yenileyin.';
             }
         }
         
         // Sayfa yüklendiğinde FFmpeg'i yükle
-        loadFFmpeg().catch(console.error);
+        loadFFmpeg();
         
         // Dosya seçme işlemi
         fileInput.addEventListener('change', (e) => {
@@ -147,11 +170,11 @@
             
             if (videoFiles.length === 0) {
                 videoList.innerHTML = '<p>Henüz video eklenmedi</p>';
-                mergeBtn.style.display = 'none';
+                mergeBtn.disabled = true;
                 return;
             }
             
-            mergeBtn.style.display = 'inline-block';
+            mergeBtn.disabled = !isFFmpegLoaded || videoFiles.length < 2;
             
             videoFiles.forEach((file, index) => {
                 const videoItem = document.createElement('div');
@@ -183,6 +206,11 @@
         
         // Videoları birleştirme işlemi
         mergeBtn.addEventListener('click', async () => {
+            if (!isFFmpegLoaded) {
+                alert('FFmpeg henüz yüklenmedi, lütfen bekleyin');
+                return;
+            }
+            
             if (videoFiles.length < 2) {
                 alert('En az 2 video seçmelisiniz!');
                 return;
@@ -194,19 +222,38 @@
             
             try {
                 // FFmpeg'e dosyaları yükle
+                const inputFiles = [];
                 for (let i = 0; i < videoFiles.length; i++) {
                     const file = videoFiles[i];
                     const data = await fetchFile(file);
-                    ffmpeg.FS('writeFile', `input${i}.mp4`, data);
+                    const inputName = `input${i}.mp4`;
+                    ffmpeg.FS('writeFile', inputName, data);
+                    inputFiles.push(inputName);
                 }
+                
+                // Birleştirme komutunu oluştur
+                const filterComplex = [];
+                const inputs = [];
+                const maps = [];
+                
+                for (let i = 0; i < inputFiles.length; i++) {
+                    inputs.push('-i', inputFiles[i]);
+                    filterComplex.push(`[${i}:v][${i}:a]`);
+                }
+                
+                filterComplex.push(`concat=n=${inputFiles.length}:v=1:a=1[outv][outa]`);
                 
                 // Birleştirme komutunu çalıştır
                 await ffmpeg.run(
-                    '-i', 'input0.mp4',
-                    '-i', 'input1.mp4',
-                    '-filter_complex', '[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]',
+                    ...inputs,
+                    '-filter_complex', filterComplex.join(''),
                     '-map', '[outv]',
                     '-map', '[outa]',
+                    '-c:v', 'libx264',
+                    '-preset', 'fast',
+                    '-crf', '23',
+                    '-c:a', 'aac',
+                    '-b:a', '128k',
                     'output.mp4'
                 );
                 
@@ -232,11 +279,15 @@
                 for (let i = 0; i < videoFiles.length; i++) {
                     try {
                         ffmpeg.FS('unlink', `input${i}.mp4`);
-                    } catch (e) {}
+                    } catch (e) {
+                        console.error('Dosya silinirken hata:', e);
+                    }
                 }
                 try {
                     ffmpeg.FS('unlink', 'output.mp4');
-                } catch (e) {}
+                } catch (e) {
+                    console.error('Çıktı dosyası silinirken hata:', e);
+                }
             }
         });
         
