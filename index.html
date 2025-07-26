@@ -2,136 +2,88 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Online Video Birleştirici</title>
+  <title>QR Kod + Görsel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 20px;
-    }
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
-      color: #ff4757;
+      background: #0d0d0d;
+      color: white;
+      font-family: sans-serif;
       text-align: center;
+      padding: 30px;
     }
-    #video-container {
-      margin: 20px 0;
-    }
-    #preview {
+    input, button {
+      margin: 10px 0;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
       width: 100%;
-      background: #000;
-      border-radius: 5px;
-    }
-    #file-input {
-      display: none;
-    }
-    .upload-btn {
-      background: #3498db;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-right: 10px;
-    }
-    .merge-btn {
-      background: #2ecc71;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+      max-width: 400px;
       font-size: 16px;
     }
-    .video-list {
-      margin: 20px 0;
-      border: 1px dashed #ccc;
-      padding: 10px;
-      min-height: 100px;
+    button {
+      background-color: #00e676;
+      color: black;
+      cursor: pointer;
+    }
+    #qr {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Online Video Birleştirici</h1>
-    <p>Birden fazla videoyu yükleyip tek bir video olarak birleştirin.</p>
-    
-    <button class="upload-btn" onclick="document.getElementById('file-input').click()">Videoları Seç</button>
-    <input type="file" id="file-input" accept="video/*" multiple>
-    
-    <div class="video-list" id="video-list">
-      <p>Henüz video eklenmedi.</p>
-    </div>
-    
-    <button class="merge-btn" id="merge-btn">Videoları Birleştir</button>
-    
-    <div id="video-container">
-      <video id="preview" controls></video>
-    </div>
-  </div>
+  <h1>Temalı QR Kod Oluştur</h1>
+  <input type="text" id="qrText" placeholder="Metin veya URL girin">
+  <input type="file" id="logoInput" accept="image/*">
+  <button onclick="generateQR()">QR Oluştur</button>
+  <div id="qr"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script>
-    const fileInput = document.getElementById('file-input');
-    const videoList = document.getElementById('video-list');
-    const mergeBtn = document.getElementById('merge-btn');
-    const preview = document.getElementById('preview');
-    let videos = [];
+    async function generateQR() {
+      const text = document.getElementById('qrText').value;
+      const logoFile = document.getElementById('logoInput').files[0];
 
-    // Video seçildiğinde
-    fileInput.addEventListener('change', function(e) {
-      videos = Array.from(e.target.files);
-      updateVideoList();
-    });
+      const canvas = document.createElement('canvas');
+      canvas.width = 300;
+      canvas.height = 300;
 
-    // Video listesini güncelle
-    function updateVideoList() {
-      if (videos.length === 0) {
-        videoList.innerHTML = '<p>Henüz video eklenmedi.</p>';
-        return;
-      }
-      
-      videoList.innerHTML = '';
-      videos.forEach((video, index) => {
-        const videoItem = document.createElement('div');
-        videoItem.innerHTML = `
-          <p>${index + 1}. ${video.name} (${formatFileSize(video.size)})</p>
-        `;
-        videoList.appendChild(videoItem);
+      await QRCode.toCanvas(canvas, text, {
+        width: 300,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#ffffff'
+        }
       });
+
+      const ctx = canvas.getContext('2d');
+
+      if (logoFile) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const size = 60;
+            const x = (canvas.width - size) / 2;
+            const y = (canvas.height - size) / 2;
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(x - 4, y - 4, size + 8, size + 8); // beyaz arka plan
+            ctx.drawImage(img, x, y, size, size);
+            showQR(canvas);
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(logoFile);
+      } else {
+        showQR(canvas);
+      }
     }
 
-    // Dosya boyutunu formatla (MB/KB)
-    function formatFileSize(bytes) {
-      if (bytes < 1024) return bytes + ' B';
-      else if (bytes < 1048576) return (bytes / 1024).toFixed(2) + ' KB';
-      else return (bytes / 1048576).toFixed(2) + ' MB';
+    function showQR(canvas) {
+      const qrDiv = document.getElementById('qr');
+      qrDiv.innerHTML = "";
+      qrDiv.appendChild(canvas);
     }
-
-    // Birleştirme butonu (simüle edildi)
-    mergeBtn.addEventListener('click', function() {
-      if (videos.length === 0) {
-        alert('Lütfen en az bir video seçin!');
-        return;
-      }
-      
-      alert('Video birleştirme işlemi başlatıldı! (Bu örnekte gerçek birleştirme yapılmaz)');
-      
-      // Örnek: İlk videoyu oynat
-      if (videos.length > 0) {
-        const videoUrl = URL.createObjectURL(videos[0]);
-        preview.src = videoUrl;
-      }
-    });
   </script>
 </body>
 </html>
